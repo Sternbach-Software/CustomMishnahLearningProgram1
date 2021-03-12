@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!--I know that this constraint layout may be pointless because I have nested views anyway,
+     but I would rather not change it until I have everything worked out.-->
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/radio_group_and_sort_layout_simple"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <!--Filter/Sort radio group-->
+
+        <RadioGroup
+            android:id="@+id/filter_sort_radio_group_simple"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/filter_radio_button_simple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Filter" />
+
+            <RadioButton
+                android:id="@+id/sort_radio_button_simple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="7dp"
+                android:padding="5dp"
+                android:text="Sort" />
+            <!--^ Margin to make "sort" button in-line with "Multiple"-->
+        </RadioGroup>
+
+        <RadioGroup
+            android:id="@+id/single_or_multiple_radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <RadioButton
+                android:id="@+id/single_radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Single" />
+
+            <RadioButton
+                android:id="@+id/multiple_radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Multiple" />
+        </RadioGroup>
+
+
+        <!--Alphabetical Order dropdown-->
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sort_order_text_input_layout_simple"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Alphabetical Order"
+            android:padding="5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <AutoCompleteTextView
+                android:id="@+id/sort_order_dropdown_simple"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <!--Linear layout of linear layouts-->
+
+
+    <!--Filter/Sort, Cancel, and Reset buttons-->
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/cancel_button_simple"
+        style="?attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/reset_button_simple" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/reset_button_simple"
+        style="?attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/filter_button_simple"
+		android:enabled="false"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/filter_button_simple"
+        style="?attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Filter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+		android:enabled="false"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

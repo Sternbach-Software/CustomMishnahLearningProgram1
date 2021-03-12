@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:paddingTop="20dp"
+	android:layout_marginStart="@dimen/medium_margin"
+	android:layout_marginEnd="@dimen/medium_margin">
+
+	<com.google.android.material.textfield.TextInputLayout
+		style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="@dimen/small_margin"
+		android:layout_marginEnd="@dimen/small_margin"
+		android:hint="Mishnah/Gemara/etc"
+		android:enabled="false">
+
+		<AutoCompleteTextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:ellipsize="end"
+			android:inputType="none"
+			android:singleLine="true"
+			tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
+
+	</com.google.android.material.textfield.TextInputLayout>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="10dp">
+<TextView
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="Start:"
+	android:layout_gravity="center"/>
+		<com.google.android.material.textfield.TextInputLayout
+			android:id="@+id/start_text_input_layout"
+			style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:hint="Mishnah/Gemara/etc">
+
+			<AutoCompleteTextView
+				android:id="@+id/start_autocomplete_text_view"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:ellipsize="end"
+				android:inputType="none"
+				android:singleLine="true"
+				tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
+
+		</com.google.android.material.textfield.TextInputLayout>
+	</LinearLayout>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="10dp">
+<TextView
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="Start:"
+	android:layout_gravity="center"/>
+		<com.google.android.material.textfield.TextInputLayout
+			android:id="@+id/end_text_input_layout"
+			style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:hint="Mishnah/Gemara/etc">
+
+			<AutoCompleteTextView
+				android:id="@+id/end_autocomplete_text_view"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:ellipsize="end"
+				android:inputType="none"
+				android:singleLine="true"
+				tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
+
+		</com.google.android.material.textfield.TextInputLayout>
+	</LinearLayout>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Learn:"/>
+		<EditText
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:inputType="number"
+			android:hint="number"/>
+	</LinearLayout>
+</LinearLayout>
