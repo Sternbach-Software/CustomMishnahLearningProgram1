@@ -70,11 +70,11 @@ class MishnahPickerDialog(private val callbackListener: CallbackListener) : Dial
         //<editor-fold desc="listeners">
         sederAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             sederBeingDisplayed = Sedarim[position]
-            Log.d(TAG,"Seder currently being displayed: $sederBeingDisplayed")
+            Log.d("TorahDownloads",TAG,"Seder currently being displayed: $sederBeingDisplayed")
         }
         masechtaAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             masechtaBeingDisplayed = Masechtot[position]
-            Log.d(TAG,"Msechta currently being displayed: $masechtaBeingDisplayed")
+            Log.d("TorahDownloads",TAG,"Masechta currently being displayed: $masechtaBeingDisplayed")
         }
         selectButton.setOnClickListener {
             callbackListener.onMishnahPicked(sederBeingDisplayed,masechtaBeingDisplayed, "TODO", "TODO")
@@ -97,10 +97,10 @@ class MishnahPickerDialog(private val callbackListener: CallbackListener) : Dial
         dropDownMenu.setText(hint, false)
         if(filterConditions === Sedarim /*points to the same object*/) {
             sederBeingDisplayed = hint
-            Log.d(TAG, "sederBeingDisplayed = $sederBeingDisplayed")
+            Log.d("TorahDownloads",TAG, "sederBeingDisplayed = $sederBeingDisplayed")
         } else {
             masechtaBeingDisplayed = hint
-            Log.d(TAG, "masechtaBeingDisplayed = $masechtaBeingDisplayed")
+            Log.d("TorahDownloads",TAG, "masechtaBeingDisplayed = $masechtaBeingDisplayed")
         }
         dropDownMenu.setAdapter(context?.let { getDropdownAdapter(it,filterConditions) })
     }

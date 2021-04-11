@@ -28,6 +28,6 @@ class MainActivity: AppCompatActivity(), CallbackListener {
     }
 
     override fun onMishnahPicked(seder: String, masechta: String, perek: String, mishnah: String) {
-        Log.d(TAG,"Mishnah picked: $seder,$masechta,$perek,$mishnah")
+        Log.d("TorahDownloads","Mishnah picked: $seder,$masechta,$perek,$mishnah")
     }
 }
