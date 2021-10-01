@@ -74,7 +74,7 @@ class MishnahPickerDialog(private val callbackListener: CallbackListener) : Dial
         }
         masechtaAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
             masechtaBeingDisplayed = Masechtot[position]
-            Log.d(TAG,"Msechta currently being displayed: $masechtaBeingDisplayed")
+            Log.d(TAG,"Masechta currently being displayed: $masechtaBeingDisplayed")
         }
         selectButton.setOnClickListener {
             callbackListener.onMishnahPicked(sederBeingDisplayed,masechtaBeingDisplayed, "TODO", "TODO")

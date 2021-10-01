@@ -3,6 +3,7 @@ package shmuly.sternbach.custommishnahlearningprogram
 import android.os.Bundle
 import android.util.Log
 import android.widget.AutoCompleteTextView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputLayout
 
@@ -28,6 +29,7 @@ class MainActivity: AppCompatActivity(), CallbackListener {
     }
 
     override fun onMishnahPicked(seder: String, masechta: String, perek: String, mishnah: String) {
-        Log.d(TAG,"Mishnah picked: $seder,$masechta,$perek,$mishnah")
+        Log.d("TorahDownloads","Mishnah picked: $seder,$masechta,$perek,$mishnah")
+        findViewById<TextView>(R.id.calendar_result).text = getCalendar().toString()
     }
 }

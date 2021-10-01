@@ -98,4 +98,12 @@
 			android:inputType="number"
 			android:hint="number"/>
 	</LinearLayout>
+	<ScrollView
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+		<TextView
+			android:id="@+id/calendar_result"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"/>
+	</ScrollView>
 </LinearLayout>
