@@ -38,7 +38,7 @@ class PerekRecyclerAdapter(val mDataSet: List<String>) :
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        Log.d("TorahDownloads",TAG, "Element $position set.")
+        Log.d(TAG, "Element $position set.")
         viewHolder.perekName.text = "Perek: ${mDataSet[position]}"
     }
 
