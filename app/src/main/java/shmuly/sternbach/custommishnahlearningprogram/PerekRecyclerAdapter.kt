@@ -32,9 +32,10 @@ class PerekRecyclerAdapter(val mDataSet: List<String>) :
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         // Create a new view.
-        val v: View = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.recycler_list_item, viewGroup, false)
-        return ViewHolder(v)
+        return ViewHolder(
+            LayoutInflater.from(viewGroup.context)
+                .inflate(R.layout.recycler_list_item, viewGroup, false)
+        )
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {

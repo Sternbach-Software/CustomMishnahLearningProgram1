@@ -9,22 +9,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 
 /**
  * This is the dialog that will be used for filtering the pages which can filterable shiurim
  * (e.g. Downloads, Favorites, List of speaker's shiurim,etc.)
  * */
 private const val TAG = "MishnahPickerDialog"
-class MishnahPickerDialog(private val callbackListener: CallbackListener) : DialogFragment() {
+class MishnahPickerDialog(
+    private val callbackListener: CallbackListener,
+    val adapterPosition: Int,
+    val startSelected: Boolean
+) : DialogFragment() {
     //private lateinit var progressiveFilterExplanationImageButton: ImageButton
     private lateinit var selectButton: Button
     private lateinit var cancelButton: Button
-    private lateinit var sederAutoCompleteTextView: AutoCompleteTextView
     private lateinit var masechtaAutoCompleteTextView: AutoCompleteTextView
-    private lateinit var recyclerViewAdapter: PerekRecyclerAdapter
-    private lateinit var sederBeingDisplayed: String //I have not tested the overall efficiency of storing the UI information in extracted variables (and instead of accessing the View's variables/fields, update the extracted variable and access that when needed), but the actual time it takes to access the extracted variable is much quicker than accessing the view's fields - in a vacuum. I say in a vacuum because in one of the android articles on efficiency, they said that object creation is always more expensive than using CPU because of the effort required in doing garbage collecting. I have not gotten to the testing and profiling phase in the TorahDownloads app to know the answer to this question, so feel free to do your own testing, and bear in mind this idea.
+    private lateinit var perekAutoCompleteTextView: AutoCompleteTextView
+    private lateinit var mishnahAutoCompleteTextView: AutoCompleteTextView
+//    private lateinit var sederBeingDisplayed: String //I have not tested the overall efficiency of storing the UI information in extracted variables (and instead of accessing the View's variables/fields, update the extracted variable and access that when needed), but the actual time it takes to access the extracted variable is much quicker than accessing the view's fields - in a vacuum. I say in a vacuum because in one of the android articles on efficiency, they said that object creation is always more expensive than using CPU because of the effort required in doing garbage collecting. I have not gotten to the testing and profiling phase in the TorahDownloads app to know the answer to this question, so feel free to do your own testing, and bear in mind this idea.
     private lateinit var masechtaBeingDisplayed: String //I have not tested the overall efficiency of storing the UI information in extracted variables (and instead of accessing the View's variables/fields, update the extracted variable and access that when needed), but the actual time it takes to access the extracted variable is much quicker than accessing the view's fields - in a vacuum. I say in a vacuum because in one of the android articles on efficiency, they said that object creation is always more expensive than using CPU because of the effort required in doing garbage collecting. I have not gotten to the testing and profiling phase in the TorahDownloads app to know the answer to this question, so feel free to do your own testing, and bear in mind this idea.
 
     override fun onCreateView(
@@ -46,38 +48,71 @@ class MishnahPickerDialog(private val callbackListener: CallbackListener) : Dial
 
         //<editor-fold desc="variable initializations">
         masechtaAutoCompleteTextView = view.findViewById(R.id.masechta_autocomplete_text_view)
-        sederAutoCompleteTextView = view.findViewById(R.id.seder_autocomplete_text_view)
+        perekAutoCompleteTextView = view.findViewById(R.id.perek_autocomplete_text_view)
+        mishnahAutoCompleteTextView = view.findViewById(R.id.mishnah_autocomplete_text_view)
         selectButton = view.findViewById(R.id.select_button)
         cancelButton = view.findViewById(R.id.cancel_button)
 
         //</editor-fold>
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
-        recyclerViewAdapter = PerekRecyclerAdapter(List(10) {(it+1).toString()})//listOf(1,2,3...)
-        recyclerView.adapter = recyclerViewAdapter
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        setAdapterAndSetHints(
-            sederAutoCompleteTextView,
-            Sedarim
-        )
-        setAdapterAndSetHints(
+        setAdapter(
             masechtaAutoCompleteTextView,
-            Masechtot
+            mishnayos.chapterNames
         )
-
-        updateRecyclerView()
 
         //<editor-fold desc="listeners">
-        sederAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
-            sederBeingDisplayed = Sedarim[position]
-            Log.d(TAG,"Seder currently being displayed: $sederBeingDisplayed")
-        }
+        var lengthsBeingDisplayed = listOf<Int>()
+        var indexOfMasechtaBeingDisplayed = 0
         masechtaAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
-            masechtaBeingDisplayed = Masechtot[position]
+            indexOfMasechtaBeingDisplayed = position
+            masechtaBeingDisplayed = mishnayos.chapterNames[position]
+            lengthsBeingDisplayed = mishnayos.chapterLengths[position]
+            perekAutoCompleteTextView.isEnabled = true
+            setAdapter(
+                perekAutoCompleteTextView,
+                (1..lengthsBeingDisplayed.size).map { it.toString() }
+            )
             Log.d(TAG,"Masechta currently being displayed: $masechtaBeingDisplayed")
+
+        }
+        var indexOfPerekBeingDisplayed = 1
+        perekAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+            indexOfPerekBeingDisplayed = position
+
+            mishnahAutoCompleteTextView.isEnabled = true
+            setAdapter(
+                mishnahAutoCompleteTextView,
+                (1..lengthsBeingDisplayed[position]).map { it.toString() }
+            )
+            Log.d(TAG,"Masechta currently being displayed: $masechtaBeingDisplayed")
+
+        }
+        var mishnaBeingDisplayed = 1
+        mishnahAutoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+            mishnaBeingDisplayed = position + 1 //starts with 1
+            Log.d(TAG,"Masechta currently being displayed: $masechtaBeingDisplayed")
+
         }
         selectButton.setOnClickListener {
-            callbackListener.onMishnahPicked(sederBeingDisplayed,masechtaBeingDisplayed, "TODO", "TODO")
+            Log.d(TAG, "" +
+                    "" +
+                    "" +
+                    "adapterPosition=$adapterPosition\n" +
+                    "startSelected=$startSelected\n" +
+                    "masechtaBeingDisplayed=$masechtaBeingDisplayed\n" +
+                    "indexOfMasechtaBeingDisplayed=$indexOfMasechtaBeingDisplayed\n" +
+                    "perekBeingDisplayed=$indexOfPerekBeingDisplayed\n" +
+                    "perekBeingDisplayed=$indexOfPerekBeingDisplayed\n" +
+                    "mishnaBeingDisplayed=$mishnaBeingDisplayed")
+            callbackListener.onMishnahPicked(
+                adapterPosition,
+                startSelected,
+                masechtaBeingDisplayed,
+                indexOfMasechtaBeingDisplayed,
+                (indexOfPerekBeingDisplayed + 1).toString(),
+                indexOfPerekBeingDisplayed,
+                mishnaBeingDisplayed
+            )
             dismiss()
         }
         cancelButton.setOnClickListener {
@@ -86,22 +121,19 @@ class MishnahPickerDialog(private val callbackListener: CallbackListener) : Dial
        //</editor-fold>
     }
 
-    private fun updateRecyclerView() {
-    }
-
-    private fun setAdapterAndSetHints(
+    private fun setAdapter(
         dropDownMenu: AutoCompleteTextView,
         filterConditions: List<String>
     ) {
-        val hint = filterConditions[0] // set default as first filter criterion
-        dropDownMenu.setText(hint, false)
-        if(filterConditions === Sedarim /*points to the same object*/) {
+//        val hint = filterConditions[0] // set default as first filter criterion
+//        dropDownMenu.setText(hint, false)
+        /*if(filterConditions === Sedarim *//*points to the same object*//*) {
             sederBeingDisplayed = hint
             Log.d(TAG, "sederBeingDisplayed = $sederBeingDisplayed")
         } else {
-            masechtaBeingDisplayed = hint
-            Log.d(TAG, "masechtaBeingDisplayed = $masechtaBeingDisplayed")
-        }
+        */
+//            Log.d(TAG, "masechtaBeingDisplayed = $masechtaBeingDisplayed")
+//        }
         dropDownMenu.setAdapter(context?.let { getDropdownAdapter(it,filterConditions) })
     }
 

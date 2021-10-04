@@ -8,11 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputLayout
 
 private const val TAG = "MainActivity"
-class MainActivity: AppCompatActivity(), CallbackListener {
+class MainActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_page)
-        val mishnahPickerDialog = MishnahPickerDialog(this)
+        lateinit var mishnahPickerDialog:MishnahPickerDialog// = MishnahPickerDialog(this)
 
         findViewById<AutoCompleteTextView>(R.id.start_autocomplete_text_view).setOnClickListener{
             mishnahPickerDialog.show(supportFragmentManager,"")
@@ -27,9 +27,9 @@ class MainActivity: AppCompatActivity(), CallbackListener {
             mishnahPickerDialog.show(supportFragmentManager,"")
         }
     }
-
-    override fun onMishnahPicked(seder: String, masechta: String, perek: String, mishnah: String) {
-        Log.d("TorahDownloads","Mishnah picked: $seder,$masechta,$perek,$mishnah")
-        findViewById<TextView>(R.id.calendar_result).text = getCalendar().toString()
-    }
+//
+//    override fun onMishnahPicked(masechta: String, perek: String, mishnah: String){
+//
+////        findViewById<TextView>(R.id.calendar_result).text = getCalendar().toString()
+//    }
 }

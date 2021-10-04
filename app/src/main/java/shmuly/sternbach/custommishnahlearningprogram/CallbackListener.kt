@@ -1,5 +1,13 @@
 package shmuly.sternbach.custommishnahlearningprogram
 
 interface CallbackListener {
-    fun onMishnahPicked(seder: String, masechta: String, perek: String, mishnah: String)
+    fun onMishnahPicked(
+        adapterPosition: Int,
+        startSelected: Boolean,
+        masechtaString: String,
+        masechtaIndex: Int,
+        perekString: String,
+        perekIndex: Int,
+        mishnah: Int
+    )
 }

@@ -3,39 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:layout_margin="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight=".5"
-            android:hint="Seder">
-
-            <AutoCompleteTextView
-                android:id="@+id/seder_autocomplete_text_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:inputType="none"
-                android:singleLine="true"
-                tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight=".5"
             android:hint="Masechta">
 
             <AutoCompleteTextView
@@ -48,14 +28,44 @@
                 tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
 
         </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:hint="Perek">
+
+            <AutoCompleteTextView
+                android:id="@+id/perek_autocomplete_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:inputType="none"
+                android:singleLine="true"
+                tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
+
+
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:hint="Mishnah">
+
+            <AutoCompleteTextView
+                android:id="@+id/mishnah_autocomplete_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:inputType="none"
+                android:singleLine="true"
+                tools:text="ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO ABCDE FGHI JKLMNO " />
+
+
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        tools:itemCount="10"
-        tools:listitem="@layout/recycler_list_item" />
 
     <FrameLayout
         android:layout_width="match_parent"

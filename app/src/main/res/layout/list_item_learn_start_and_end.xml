@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/learnSegment">
 
     <TextView
-        android:id="@+id/text_Start"
+        android:id="@+id/text_start"
         android:layout_width="55dp"
         android:layout_height="45dp"
 
@@ -21,7 +22,7 @@
         />
 
     <TextView
-        android:id="@+id/StartM"
+        android:id="@+id/start_mishnah"
         android:layout_width="wrap_content"
         android:layout_height="45dp"
         android:layout_marginStart="5dp"
@@ -30,12 +31,16 @@
         android:gravity="center"
 
         android:textAlignment="center"
-        app:layout_constraintStart_toEndOf="@id/text_Start"
+        app:layout_constraintStart_toEndOf="@id/text_start"
         app:layout_constraintEnd_toStartOf="@+id/midSplit"
-        app:layout_constraintTop_toTopOf="@+id/text_Start" />
+        app:layout_constraintTop_toTopOf="@+id/text_start"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        tools:text="Berachos 5:6"/>
 
     <TextView
-        android:id="@+id/textEnd"
+        android:id="@+id/text_end"
         android:layout_width="55dp"
         android:layout_height="45dp"
 
@@ -47,21 +52,23 @@
 
         android:layout_marginEnd="5dp"
         app:layout_constraintStart_toEndOf="@+id/midSplit"
-        app:layout_constraintTop_toTopOf="@+id/text_Start"
+        app:layout_constraintTop_toTopOf="@+id/text_start"
         />
 
     <TextView
-        android:id="@+id/EndM"
+        android:id="@+id/end_mishnah"
         android:layout_width="wrap_content"
         android:layout_height="45dp"
 
         android:textSize="16.5sp"
         android:gravity="center"
 
-        app:layout_constraintStart_toEndOf="@+id/textEnd"
+        app:layout_constraintStart_toEndOf="@+id/text_end"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textEnd"
-        />
+        app:layout_constraintTop_toTopOf="@+id/text_end"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"/>
 
     <TextView
         android:id="@+id/midSplit"

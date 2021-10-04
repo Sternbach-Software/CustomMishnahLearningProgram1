@@ -2,70 +2,259 @@ package shmuly.sternbach.custommishnahlearningprogram
 
 import java.time.LocalDate
 import java.time.Period
-import java.util.ArrayList
+import java.time.format.DateTimeFormatter
+import kotlin.system.measureNanoTime
 
-class CreatorShmuly {
+val DATE_PATTERN = "EEE MMMM dd"
+val LD_FOMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN)
+private fun formatLocalDate(ld: LocalDate): String {
+    return LD_FOMATTER.format(ld)
+}
+//class CreatorShmuly {
+
+    /*
+    * 1/28/2019
+    * 1-28-2019
+    * 1/28/19
+    * 1-28-19
+    * January 28, 2019
+    * Jan 28, 2019
+    * January 28 '19
+    * Jan 28 '19
+    * January 28
+    * Jan 28
+    * Wed 1/28/2019
+    * Wed 1-28-2019
+    * Wed January 28
+    * Wed Jan 28
+    * Wed January 28 2019
+    * Wed Jan 28 2019
+    * Wednesday, January 28
+    * Wednesday, January 28, 2019
+    * Wed
+    * Wednesday
+    * */
     abstract class LearningProgramMaker {
+
         abstract val programName: String
         abstract val chapterNames: List<String>
         abstract val chapterLengths: List<List<Int>>
+        abstract val numReviewsPerUnit: Int
+        abstract val reviewIntervals: List<Int> //num days after new material to review
+        //val sedarim = listOf("Zeraim", "Moed", "Nashim", "Nezikin", "Kodashim", "Taharos")
 //        val totalNumberOfUnits: Int by lazy { chapterLengths.sumBy { it.size } }
 
         /**
          * If program is mishnayos, returns ["Berachos, 1:1", "Berachos, 1:2", ...]
          * */
-        val allUnits: List<String> by lazy {
-            val list = mutableListOf<String>()
-            for (index in chapterNames.indices) {
-                val chapterName = chapterNames[index]
-                val listOfLengths = chapterLengths[index]
+//        open val allUnits: List<String> by lazy { listMappedToUnits(chapterNames, chapterLengths) }
+        open val listOfPrograms by lazy { //e.g. peah-bikkurim, brachos, moed-taharos...
+            mutableListOf<List<String>>().apply {
+//                add(
+//                    listMappedToUnits(chapterNames, chapterLengths) //equivalent to allUnits, replace with sublist to create peah-bikkurim, brachos, moed-taharos, etc.
+//                )
+            }
+        }
+
+        fun listMappedToUnits(listOfNames: List<String>, listOfListsOfLengths: List<List<Int>>): MutableList<String> {
+            val finalList: MutableList<String> = mutableListOf()
+            for (index in listOfNames.indices) {
+                val chapterName = listOfNames[index]
+                val listOfLengths = listOfListsOfLengths[index]
                 for (index1 in listOfLengths.indices) {
                     for (chapterUnit in 1..listOfLengths[index1])
-                        list.add("$chapterName ${index1 + 1}:$chapterUnit") //Berachos 1:1, Berachos 1:2, ...
+                        finalList.add("$chapterName ${index1 + 1}:$chapterUnit") //Berachos 1:1, Berachos 1:2, ...
                 }
             }
-            list
+            return finalList
         }
 
         /**
-         * @param interval duration that each unit lasts for (e.g. Period.of(day=1) means that a new unit is learned every day)
-         * @return ["Berachos 1:1 - Berachos 1:4" to 01/01/2020...]
+         * @param intervalToLearnNewMaterial duration that each unit lasts for (e.g. Period.of(day=1) means that a new unit is learned every day)
+         * @return Pair<List<new material to date learned>, List<reviews to date-to-review>>["Berachos 1:1 - Berachos 1:4" to 01/01/2020...]
          * */
         fun generateProgram(
             startDate: LocalDate,
-            interval: Period,
+            intervalToLearnNewMaterial: Period,
             numUnitsPerInterval: Int
-        ): List<Pair<String, LocalDate>> {
-            val list = mutableListOf<Pair<String, LocalDate>>()
+        ): Pair<
+                MutableList<Pair<String, LocalDate>>,
+                MutableList<Pair<String, LocalDate>>
+        > {
+            val listOfNewMaterial = mutableListOf<Pair<String, LocalDate>>()
+            val listOfReviews = mutableListOf<Pair<String, LocalDate>>()
             var currentDate = startDate
             var counter = 0
-            while (true/*counter < allUnits.size*/) {
-                //TODO support half units ("Berachos 1:1 - Berachos 1:1.5", "Berachos 1:1.5  - Berachos 1:2", third units, etc.
+            programLoop@ for (index in listOfPrograms.indices) {
+                val program = listOfPrograms[index]
+                populationLoop@/*just for documentation*/ while (true/*counter < program.size*/) {//this loop populates list new material and reviews
+                    //TODO support half units ("Berachos 1:1 - Berachos 1:1.5", "Berachos 1:1.5  - Berachos 1:2", third units, etc.
 
-                val startUnit = allUnits[counter]
-                var endIndex = allUnits.size - 1
-                if (counter + numUnitsPerInterval < allUnits.size) {
-                    endIndex = counter + numUnitsPerInterval - 1
-                    val endUnit = allUnits[endIndex]
-                    list.add("$startUnit - $endUnit" to currentDate)
-                    counter += numUnitsPerInterval
-                    currentDate = currentDate.plus(interval)
-                } else { //taking last set of units and then program creation is finished
-                    val endUnit = allUnits[endIndex]
-                    list.add("$startUnit - $endUnit" to currentDate)
-                    break //more efficient than counter = allUnits.size so that loop will check condition
+                    val startUnit = program[counter]
+                    var endIndex = program.size - 1
+                    if (counter + numUnitsPerInterval < program.size) {
+                        endIndex = counter + numUnitsPerInterval - 1
+                        val endUnit = program[endIndex]
+                        populateNewMaterialAndReviews(
+                            startUnit,
+                            endUnit,
+                            listOfNewMaterial,
+                            currentDate,
+                            listOfReviews
+                        )
+                        counter += numUnitsPerInterval
+                        currentDate = currentDate.plus(intervalToLearnNewMaterial)
+                    } else { //this is last iteration for current list. If there is another list after this one, continue the iteration taking from that one, otherwise, this is the last iteration and then the program creation is done
+                        if(index != listOfPrograms.size - 1) { //there are more lists
+                            //TODO test this edge case to make sure I solved it right
+                            //program is 10 long, counter is at 9 and numUnitsPerInterval is 4, so take 1 from this list and take 3 from the next list
+//                            val numToTakeFromThisList = program.size /*e.g. 10*/ - counter /*e.g. 9*/ //lema'aseh the end unit the user is going to see (according to the way we are doing it now) will be the one in the next list, so there is no such thing in our algorithm as "taking" the elements in the middle (becuase they are not actually going into what the user sees), so this variable is meaningless (it may be meaningful in an algorithm in which there would be a need for having every intermediary element in some list)
+                            val numToTakeFromNextList = (counter /*9*/ + numUnitsPerInterval /*4*/) /*13*/ - program.size /*10*/ /* = 3*/
+                            if(numToTakeFromNextList == 0) {//there are exactly enough units left in this list to keep at the pace and start from counter = 0 in the next list
+                                val endUnit = program[counter/*already set to last valid index/entry before the parent "if"*/]
+                                populateNewMaterialAndReviews(
+                                    startUnit,
+                                    endUnit,
+                                    listOfNewMaterial,
+                                    currentDate,
+                                    listOfReviews
+                                )
+                                counter = 0
+                            } else {
+                                counter = numToTakeFromNextList.minus(1) /*for index instead of size*/ // now counter = 2
+                                val endUnit = listOfPrograms[index+1][counter] /*make endUnit 3rd unit in next list*/
+                                populateNewMaterialAndReviews(
+                                    startUnit,
+                                    endUnit,
+                                    listOfNewMaterial,
+                                    currentDate,
+                                    listOfReviews
+                                )
+                                counter += 1 /*start the next iteration from the next one so that we don't take the same mishna twice*/
+                            }
+                            continue@programLoop
+                        } else { //no more lists, so take whatever is left from this list and the user will "have a half-day on the last day of school -- Hurray!" if there are not enough left for a full workload (e.g. 4 mishnayos on a regular day when there are only 3 left today)
+                            val endUnit = program[endIndex/*already set to last valid index/entry before the parent "if"*/]
+                            populateNewMaterialAndReviews(
+                                startUnit,
+                                endUnit,
+                                listOfNewMaterial,
+                                currentDate,
+                                listOfReviews
+                            )
+                            break
+                        }
+                    }
                 }
             }
-            return list
+            return listOfNewMaterial to listOfReviews
         }
 
-        //val sedarim = listOf("Zeraim", "Moed", "Nashim", "Nezikin", "Kodashim", "Taharos")
+        private fun populateNewMaterialAndReviews(
+            startUnit: String,
+            endUnit: String,
+            listOfNewMaterial: MutableList<Pair<String, LocalDate>>,
+            currentDate: LocalDate,
+            listOfReviews: MutableList<Pair<String, LocalDate>>
+        ) {
+            val intervaledUnit = "$startUnit - $endUnit"
+            listOfNewMaterial.add(intervaledUnit to currentDate)/*formatLocalDate(currentDate)*/
+            populateListOfReviews(listOfReviews, intervaledUnit, currentDate)
+        }
+
+        private fun populateListOfReviews(
+            listOfReviews: MutableList<Pair<String, LocalDate>>,
+            intervaledUnit: String,
+            currentDate: LocalDate
+        ) {
+            for (reviewInterval in reviewIntervals)
+                listOfReviews.add(
+                    intervaledUnit to
+//                            formatLocalDate(
+                            currentDate.plus(
+                                Period.of(
+                                    0,
+                                    0,
+                                    reviewInterval// + 1/*not sure why I have to add 1, but it fixes the numbers*/
+                                )
+                            )
+//                            )
+                )
+        }
     }
     class Mishnayos : LearningProgramMaker() {
+        override val numReviewsPerUnit: Int = 6
+        override val reviewIntervals: List<Int> = listOf(1, 8, 38, 128).let {
+            if(numReviewsPerUnit <= it.size) it else
+            it + //add every year (e.g. 365, 730, etc.)
+                    (1..(numReviewsPerUnit - it.size)) /*excluding previous reviews*/
+                        .fold(mutableListOf(365)) { acc: MutableList<Int>, i: Int ->
+                            acc.apply{
+                                add(acc.last() * i)
+                            }
+                        }
+        }
         override val programName: String = "Mishnayos"
         override val chapterNames: List<String> = listOf( //Masechtos
+            "ברכות",
+            "פאה",
+            "דמאי",
+            "כלאים",
+            "שביעית",
+            "תרומות",
+            "מעשרות",
+            "חלה",
+            "ערלה",
+            "ביכורים",
+            "שבת",
+            "עירובין",
+            "פסחים",
+            "שקלים",
+            "יומא",
+            "סוכה",
+            "ביצה",
+            "תענית",
+            "מגילה",
+            "חגיגה",
+            "יבמות",
+            "כתובות",
+            "נדרים",
+            "נזיר",
+            "סוטה",
+            "גיטין",
+            "קידושין",
+            "סנהדרין",
+            "מכות",
+            "שבועות",
+            "עדיות",
+            "אבות",
+            "הוריות",
+            "זבחים",
+            "מנחות",
+            "חולין",
+            "בכורות",
+            "ערכין",
+            "תמורה",
+            "כריתות",
+            "מעילה",
+            "תמיד",
+            "מדות",
+            "קינים",
+            "כלים",
+            "אהלות",
+            "נגעים",
+            "פרה",
+            "טהרות",
+            "מקואות",
+            "נדה",
+            "מכשירין",
+            "זבים",
+            "ידים",
+            "עוקצים",
+        )
+        /*listOf( //Masechtos
             "Berachos",
-            "Peah",
+            "Pe'ah",
             "Demai",
             "Kil'aim",
             "Shevi'is",
@@ -74,7 +263,7 @@ class CreatorShmuly {
             "Ma'aser Sheni",
             "Chalah",
             "Orlah",
-            "Bikurim",
+            "Bikkurim",
             "Shabbos",
             "Eruvin",
             "Pesachim",
@@ -126,9 +315,9 @@ class CreatorShmuly {
             "Zavim",
             "Tevul Yom",
             "Yadayim",
-            "Uktzin"
+            "Uktzim"
         )
-        override val chapterLengths: List<List<Int>> = listOf( //Perakim
+        */override val chapterLengths: List<List<Int>> = listOf( //Perakim
             listOf(5, 8, 6, 7, 5, 8, 5, 8, 5),
             listOf(6, 8, 8, 11, 8, 11, 8, 9),
             listOf(4, 5, 6, 7, 11, 12, 8),
@@ -225,10 +414,53 @@ class CreatorShmuly {
             listOf(6, 10, 12)
         )
     }
-}
+//}
 
 fun main() {
-    val x = CreatorShmuly.Mishnayos()
-    println(x.allUnits)
-    println(x.generateProgram(LocalDate.now(), Period.of(0,0,1),4))
+    val x = measureNanoTime {
+        val mishnayos = Mishnayos()
+//    println(x.allUnits)
+        mishnayos.listOfPrograms.clear()
+        mishnayos.listOfPrograms.apply {
+            val startIndex = mishnayos.chapterNames.indexOf("Pe'ah")
+            val endIndex =
+                mishnayos.chapterNames.indexOf("Bikkurim") + 1 //exclusive when used as last index and inclusive when used as first endex, so save myself the math by doing it here
+            add(
+                mishnayos.listMappedToUnits(
+                    mishnayos.chapterNames.subList(startIndex, endIndex),
+                    mishnayos.chapterLengths.subList(startIndex, endIndex)
+                )
+            )
+            add(
+                mishnayos.listMappedToUnits(
+                    mishnayos.chapterNames.subList(0, 1),
+                    mishnayos.chapterLengths.subList(0, 1)
+                ) //berachos
+            )
+            add(
+                mishnayos.listMappedToUnits(
+                    mishnayos.chapterNames.subList(endIndex, mishnayos.chapterNames.size),
+                    mishnayos.chapterLengths.subList(endIndex, mishnayos.chapterLengths.size)
+                )
+            )
+        }
+        val program = mishnayos.generateProgram(
+            startDate = LocalDate.now(),
+            intervalToLearnNewMaterial = Period.of(0, 0, 1),
+            4
+        )
+//        File("Program.txt").apply {
+//            if (exists()) delete()
+//            createNewFile()
+//            appendText("New material: ${program.first}\n")
+//            appendText(
+//                "Reviews: ${
+//                    program.second.sortedBy { it.second }
+//                        .mapIndexed { index, pair -> "$index~$pair" }
+//                }"
+//            )
+//        }
+        println(LocalDate.parse("2010-10-10").plus(Period.of(1,1,1)))
+    }
+    println(x)
 }
