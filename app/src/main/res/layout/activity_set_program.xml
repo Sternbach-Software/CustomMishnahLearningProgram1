@@ -6,139 +6,209 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_margin="16dp">
-<LinearLayout
-    android:id="@+id/set_date"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    android:orientation="vertical">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start date:" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/DropdownMenuWithCalendarEndIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/small_margin"
-            android:minWidth="240dp"
-            android:clickable="true"
-            android:gravity="end">
-
-            <AutoCompleteTextView
-                android:id="@+id/date"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none"
-                android:clickable="true" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-    </LinearLayout>
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Speed:"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/individual_filter_criterion_chooser_text_input_layout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/small_margin"
-            android:hint="mishna(yos) / day"
-            android:minWidth="240dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/speed"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                />
-
-        </com.google.android.material.textfield.TextInputLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/review_1_day"
+            <LinearLayout
+                android:id="@+id/set_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1 day" />
+                android:orientation="vertical">
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/review_8_days"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="8 days" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/review_38_days"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="38 days" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Start date:" />
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/review_128_days"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="128 days" />
-        </LinearLayout>
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/date_text_input_layout"
+                        style="@style/DropdownMenuWithCalendarEndIcon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/small_margin"
+                        android:minWidth="240dp"
+                        android:clickable="true"
+                        android:gravity="end">
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/review_364_days"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="364 days" />
+                        <AutoCompleteTextView
+                            android:id="@+id/date"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:clickable="true" />
 
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Custom" />
-            <EditText
-                android:id="@+id/custom_times"
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp">
+
+                    <TextView
+                        android:id="@+id/speed_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Speed:"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/individual_filter_criterion_chooser_text_input_layout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:hint="mishna(yos) / day"
+                        android:minWidth="240dp"
+                        android:layout_marginStart="26dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/speed_text_view"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/speed"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/review_1_day"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1 day" />
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/review_8_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="8 days" />
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/review_38_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="38 days" />
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:id="@+id/review_128_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="128 days" />
+                    </LinearLayout>
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/review_364_days"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="364 days" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.checkbox.MaterialCheckBox
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Custom" />
+
+                        <EditText
+                            android:id="@+id/custom_times"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:digits="0123456789,"
+                            android:inputType="number"
+                            android:hint="728,1094,etc." />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/parsed_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="uneinvei" />
+                </LinearLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/textView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Num reviews:"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:hint="E.g. 5"
+                        android:minWidth="240dp"
+                        android:layout_marginStart="5dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/textView"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/num_reviews"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="match_parent"
+                tools:listitem="@layout/list_item_learn_start_and_end" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/done"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Done"
+                android:layout_gravity="end"
+                android:layout_marginEnd="10dp"/>
         </LinearLayout>
-    </LinearLayout>
-</LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/set_date"
-        tools:listitem="@layout/list_item_learn_start_and_end"/>
-
+    </ScrollView>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_fab"
         android:layout_width="wrap_content"
@@ -148,13 +218,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/done_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_baseline_check_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

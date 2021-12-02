@@ -1,14 +1,44 @@
 package shmuly.sternbach.custommishnahlearningprogram
 
+import shmuly.sternbach.custommishnahlearningprogram.activities.MutablePair
+import shmuly.sternbach.custommishnahlearningprogram.activities.toDateMap
+import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import kotlin.system.measureNanoTime
 
-val DATE_PATTERN = "EEE MMMM dd"
+val DATE_PATTERN = "EEE MMMM dd uuuu"
 val LD_FOMATTER = DateTimeFormatter.ofPattern(DATE_PATTERN)
-private fun formatLocalDate(ld: LocalDate): String {
+fun formatLocalDate(ld: LocalDate): String {
     return LD_FOMATTER.format(ld)
+}
+val inHebrew = false
+fun Int.toHebrew() = if(!inHebrew) this else when(this){
+    1 -> "א"
+    2 -> "ב"
+    3 -> "ג"
+    4 -> "ד"
+    5 -> "ה"
+    6 -> "ו"
+    7 -> "ז"
+    8 -> "ח"
+    9 -> "ט"
+    10 -> "י"
+    11 -> "יא"
+    12 -> "יב"
+    13 -> "יג"
+    14 -> "יד"
+    15 -> "טו"
+    16 -> "טז"
+    17 -> "יז"
+    18 -> "יח"
+    19 -> "יט"
+    20 -> "כ"
+    21 -> "כא"
+    22 -> "כב"
+    23 -> "כג"
+    else -> TODO("This=$this")
 }
 //class CreatorShmuly {
 
@@ -39,8 +69,8 @@ private fun formatLocalDate(ld: LocalDate): String {
         abstract val programName: String
         abstract val chapterNames: List<String>
         abstract val chapterLengths: List<List<Int>>
-        abstract val numReviewsPerUnit: Int
-        abstract val reviewIntervals: List<Int> //num days after new material to review
+        abstract var numReviewsPerUnit: Int
+        abstract val reviewIntervals: MutableList<Int> //num days after new material to review
         //val sedarim = listOf("Zeraim", "Moed", "Nashim", "Nezikin", "Kodashim", "Taharos")
 //        val totalNumberOfUnits: Int by lazy { chapterLengths.sumBy { it.size } }
 
@@ -63,7 +93,7 @@ private fun formatLocalDate(ld: LocalDate): String {
                 val listOfLengths = listOfListsOfLengths[index]
                 for (index1 in listOfLengths.indices) {
                     for (chapterUnit in 1..listOfLengths[index1])
-                        finalList.add("$chapterName ${index1 + 1}:$chapterUnit") //Berachos 1:1, Berachos 1:2, ...
+                        finalList.add("$chapterName ${(index1 + 1).toHebrew()}:${chapterUnit.toHebrew()}") //Berachos 1:1, Berachos 1:2, ...
                 }
             }
             return finalList
@@ -78,26 +108,25 @@ private fun formatLocalDate(ld: LocalDate): String {
             intervalToLearnNewMaterial: Period,
             numUnitsPerInterval: Int
         ): Pair<
-                MutableList<Pair<String, LocalDate>>,
-                MutableList<Pair<String, LocalDate>>
+                MutableList<Pair<ProgramUnit<String>, LocalDate>>,
+                MutableList<Pair<ProgramUnit<String>, LocalDate>>
         > {
-            val listOfNewMaterial = mutableListOf<Pair<String, LocalDate>>()
-            val listOfReviews = mutableListOf<Pair<String, LocalDate>>()
+            val listOfNewMaterial = mutableListOf<Pair<ProgramUnit<String>, LocalDate>>()
+            val listOfReviews = mutableListOf<Pair<ProgramUnit<String>, LocalDate>>()
             var currentDate = startDate
             var counter = 0
             programLoop@ for (index in listOfPrograms.indices) {
                 val program = listOfPrograms[index]
                 populationLoop@/*just for documentation*/ while (true/*counter < program.size*/) {//this loop populates list new material and reviews
                     //TODO support half units ("Berachos 1:1 - Berachos 1:1.5", "Berachos 1:1.5  - Berachos 1:2", third units, etc.
-
-                    val startUnit = program[counter]
+                    val startIndex = counter
                     var endIndex = program.size - 1
                     if (counter + numUnitsPerInterval < program.size) {
                         endIndex = counter + numUnitsPerInterval - 1
-                        val endUnit = program[endIndex]
                         populateNewMaterialAndReviews(
-                            startUnit,
-                            endUnit,
+                            program,
+                            startIndex,
+                            endIndex,
                             listOfNewMaterial,
                             currentDate,
                             listOfReviews
@@ -111,21 +140,24 @@ private fun formatLocalDate(ld: LocalDate): String {
 //                            val numToTakeFromThisList = program.size /*e.g. 10*/ - counter /*e.g. 9*/ //lema'aseh the end unit the user is going to see (according to the way we are doing it now) will be the one in the next list, so there is no such thing in our algorithm as "taking" the elements in the middle (becuase they are not actually going into what the user sees), so this variable is meaningless (it may be meaningful in an algorithm in which there would be a need for having every intermediary element in some list)
                             val numToTakeFromNextList = (counter /*9*/ + numUnitsPerInterval /*4*/) /*13*/ - program.size /*10*/ /* = 3*/
                             if(numToTakeFromNextList == 0) {//there are exactly enough units left in this list to keep at the pace and start from counter = 0 in the next list
-                                val endUnit = program[counter/*already set to last valid index/entry before the parent "if"*/]
+                                val endIndex = counter/*already set to last valid index/entry before the parent "if"*/
                                 populateNewMaterialAndReviews(
-                                    startUnit,
-                                    endUnit,
+                                    program,
+                                    startIndex,
+                                    endIndex,
                                     listOfNewMaterial,
                                     currentDate,
                                     listOfReviews
                                 )
                                 counter = 0
                             } else {
+                                val list = mutableListOf<String>()
+                                for(i in startIndex until program.size) list.add(program[i]) //take all remaining units from previous program
+                                val nextProgram = listOfPrograms[index + 1]
                                 counter = numToTakeFromNextList.minus(1) /*for index instead of size*/ // now counter = 2
-                                val endUnit = listOfPrograms[index+1][counter] /*make endUnit 3rd unit in next list*/
+                                for(i in 0..counter) list.add(nextProgram[i]) /*take remaining units from next program*/ /*make endUnit 3rd unit in next list*/
                                 populateNewMaterialAndReviews(
-                                    startUnit,
-                                    endUnit,
+                                    list,
                                     listOfNewMaterial,
                                     currentDate,
                                     listOfReviews
@@ -134,10 +166,10 @@ private fun formatLocalDate(ld: LocalDate): String {
                             }
                             continue@programLoop
                         } else { //no more lists, so take whatever is left from this list and the user will "have a half-day on the last day of school -- Hurray!" if there are not enough left for a full workload (e.g. 4 mishnayos on a regular day when there are only 3 left today)
-                            val endUnit = program[endIndex/*already set to last valid index/entry before the parent "if"*/]
                             populateNewMaterialAndReviews(
-                                startUnit,
-                                endUnit,
+                                program,
+                                startIndex,
+                                endIndex/*already set to last valid index/entry before the parent "if"*/,
                                 listOfNewMaterial,
                                 currentDate,
                                 listOfReviews
@@ -151,20 +183,31 @@ private fun formatLocalDate(ld: LocalDate): String {
         }
 
         private fun populateNewMaterialAndReviews(
-            startUnit: String,
-            endUnit: String,
-            listOfNewMaterial: MutableList<Pair<String, LocalDate>>,
+            program: List<String>,
+            startIndex: Int,
+            endIndex: Int,
+            listOfNewMaterial: MutableList<Pair<ProgramUnit<String>, LocalDate>>,
             currentDate: LocalDate,
-            listOfReviews: MutableList<Pair<String, LocalDate>>
+            listOfReviews: MutableList<Pair<ProgramUnit<String>, LocalDate>>
         ) {
-            val intervaledUnit = "$startUnit - $endUnit"
-            listOfNewMaterial.add(intervaledUnit to currentDate)/*formatLocalDate(currentDate)*/
-            populateListOfReviews(listOfReviews, intervaledUnit, currentDate)
+            val list = mutableListOf<String>()
+            for(i in startIndex..endIndex) list.add(program[i])
+            populateNewMaterialAndReviews(list, listOfNewMaterial, currentDate, listOfReviews)
+        }
+        private fun populateNewMaterialAndReviews(
+            units: List<String>,
+            listOfNewMaterial: MutableList<Pair<ProgramUnit<String>, LocalDate>>,
+            currentDate: LocalDate,
+            listOfReviews: MutableList<Pair<ProgramUnit<String>, LocalDate>>
+        ) {
+            val programUnit = ProgramUnit(units)
+            listOfNewMaterial.add(programUnit to currentDate)
+            populateListOfReviews(listOfReviews, programUnit, currentDate)
         }
 
         private fun populateListOfReviews(
-            listOfReviews: MutableList<Pair<String, LocalDate>>,
-            intervaledUnit: String,
+            listOfReviews: MutableList<Pair<ProgramUnit<String>, LocalDate>>,
+            intervaledUnit: ProgramUnit<String>,
             currentDate: LocalDate
         ) {
             for (reviewInterval in reviewIntervals)
@@ -182,20 +225,8 @@ private fun formatLocalDate(ld: LocalDate): String {
                 )
         }
     }
-    class Mishnayos : LearningProgramMaker() {
-        override val numReviewsPerUnit: Int = 6
-        override val reviewIntervals: List<Int> = listOf(1, 8, 38, 128).let {
-            if(numReviewsPerUnit <= it.size) it else
-            it + //add every year (e.g. 365, 730, etc.)
-                    (1..(numReviewsPerUnit - it.size)) /*excluding previous reviews*/
-                        .fold(mutableListOf(365)) { acc: MutableList<Int>, i: Int ->
-                            acc.apply{
-                                add(acc.last() * i)
-                            }
-                        }
-        }
-        override val programName: String = "Mishnayos"
-        override val chapterNames: List<String> = listOf( //Masechtos
+    open class Mishnayos : LearningProgramMaker() {
+        val hebrewList = listOf(
             "ברכות",
             "פאה",
             "דמאי",
@@ -252,7 +283,7 @@ private fun formatLocalDate(ld: LocalDate): String {
             "ידים",
             "עוקצים",
         )
-        /*listOf( //Masechtos
+        val englishList = listOf( //Masechtos
             "Berachos",
             "Pe'ah",
             "Demai",
@@ -317,7 +348,7 @@ private fun formatLocalDate(ld: LocalDate): String {
             "Yadayim",
             "Uktzim"
         )
-        */override val chapterLengths: List<List<Int>> = listOf( //Perakim
+        override val chapterLengths: List<List<Int>> = listOf( //Perakim
             listOf(5, 8, 6, 7, 5, 8, 5, 8, 5),
             listOf(6, 8, 8, 11, 8, 11, 8, 9),
             listOf(4, 5, 6, 7, 11, 12, 8),
@@ -413,6 +444,10 @@ private fun formatLocalDate(ld: LocalDate): String {
             listOf(5, 4, 5, 8),
             listOf(6, 10, 12)
         )
+        override var numReviewsPerUnit: Int = 6
+        override val reviewIntervals: MutableList<Int> = mutableListOf()
+        override val programName: String = "Mishnayos"
+        override val chapterNames: List<String> = if(inHebrew) hebrewList else englishList
     }
 //}
 
@@ -448,7 +483,13 @@ fun main() {
             startDate = LocalDate.now(),
             intervalToLearnNewMaterial = Period.of(0, 0, 1),
             4
-        )
+        ).toDateMap()
+        val a = mapToString(program)
+        val b = stringToMap(a)
+        println("Program:       ${program.toList().take(2)}")
+        println("String to map: ${b!!.toList().take(2)}")
+        println("Map to string: ${a!!.take(200)}")
+        println("program correctness: ${b == program}")
 //        File("Program.txt").apply {
 //            if (exists()) delete()
 //            createNewFile()
@@ -463,4 +504,102 @@ fun main() {
         println(LocalDate.parse("2010-10-10").plus(Period.of(1,1,1)))
     }
     println(x)
+}
+fun stringToMap(databaseValue: String?): Map<LocalDate, MutablePair<ProgramUnit<String>?, MutableList<ProgramUnit<String>>>>? {
+    //dd-dd-dddd|(abc%abc%abc)@{[abc=abc=abc]^[abc=abc-abc]} ~
+    //dd-dd-dddd|(abc%abc%abc)@{[abc=abc=abc]^[abc=abc-abc]} ~
+    //dd-dd-dddd|(abc%abc%abc)@{[abc=abc=abc]^[abc=abc-abc]}...
+    return databaseValue
+        ?.split("~")
+        ?.map {
+            it
+                .split("|")
+                .let {
+                    Pair(
+                        LocalDate.parse(it[0]),
+                        it[1]
+                            .split("@")
+                            .let {
+                                MutablePair(
+                                    ProgramUnit(
+                                        it[0].split("%")
+                                    ) as ProgramUnit?,
+                                    if(it[1].isBlank()) mutableListOf() else
+                                    it[1]
+                                        .split("^")
+                                        .mapTo(mutableListOf()) {
+                                            ProgramUnit(it.split("="))
+                                        }
+                                )
+                            }
+                    )
+                }
+//                ProgramUnit(it)
+        }
+        ?.toMap()
+}
+
+fun mapToString(entityProperty: Map<LocalDate, MutablePair<ProgramUnit<String>?, MutableList<ProgramUnit<String>>>>?): String? {
+    //      12-34-5678
+    //             |
+    //      abc
+    //              %
+    //      abc
+    //              %
+    //      abc
+    //      @
+    //              abc
+    //                      =
+    //              abc
+    //                      =
+    //              abc
+    //              ^
+    //              abc
+    //                      =
+    //              abc
+    //                      =
+    //              abc
+    // ~
+    //      12-34-5678
+    //             |
+    //      abc
+    //              %
+    //      abc
+    //              %
+    //      abc
+    //      @
+    //              abc
+    //                      =
+    //              abc
+    //                      =
+    //              abc
+    //              ^
+    //              abc
+    //                      =
+    //              abc
+    //                      =
+    //              abc
+    return entityProperty?.let {
+        it
+            .toList()
+            .joinToString("~") {//...~...~...
+                it.first.toString() +
+                        "|" +
+                        it.second.let { it1 ->  //dd-dd-dddd|(abc%abc%abc)@{[abc=abc=abc]^[abc=abc-abc]^...}
+                            it1
+                                .first
+                                ?.listOfMaterials
+                                ?.joinToString("%") +
+                                    "@" +
+                                    it1
+                                        .second
+                                        .joinToString("^") {
+                                            it
+                                                .listOfMaterials
+                                                .joinToString("=")
+                                        }
+                        }
+            }
+//            ) //entityProperty?.listOfMaterials?.joinToString("~") }
+    }
 }

@@ -10,14 +10,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CustomMishnahLearningProgram">
-        <activity android:name=".HomePageActivity"
+        <activity android:name=".activities.HomePageActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".CreateProgramActivity"/>
+        <activity android:name=".activities.CreateProgramActivity"/>
+        <activity android:name=".activities.ActivityTimeline"/>
+        <activity android:name=".activities.ActivityTodayList"/>
     </application>
 
 </manifest>

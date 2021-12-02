@@ -4,14 +4,18 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_baseline_calendar_today_24.xml" value="0.14270833333333333" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_done.xml" value="0.1" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_skipped.xml" value="0.1" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_to_do.xml" value="0.1" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/activity_home_page.xml" value="0.18888888888888888" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/activity_main_new.xml" value="1.0" />
-        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/activity_set_program.xml" value="0.30720606826801516" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/activity_set_program.xml" value="0.22" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/fast_scroller.xml" value="0.1" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/home_page.xml" value="0.25" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/learn_start_and_end.xml" value="0.14270833333333333" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/list_item_learn_start_and_end.xml" value="0.25" />
-        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/list_item_unit_card.xml" value="0.25" />
-        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/mishna_picker.xml" value="0.2521631644004944" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/list_item_unit_card.xml" value="0.33" />
+        <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/mishna_picker.xml" value="0.1265625" />
       </map>
     </option>
   </component>

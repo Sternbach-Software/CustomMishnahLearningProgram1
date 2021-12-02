@@ -1,4 +1,4 @@
-package shmuly.sternbach.custommishnahlearningprogram
+package shmuly.sternbach.custommishnahlearningprogram.data
 
 data class Mishnah(
     var masechtaString: String = "",
@@ -6,7 +6,7 @@ data class Mishnah(
     var perekString: String = "",
     var perekIndex: Int = -1,
     var mishnah: Int = -1
-) {
+): ProgramType {
     override fun toString(): String {
         return "$masechtaString $perekString:$mishnah"
     }

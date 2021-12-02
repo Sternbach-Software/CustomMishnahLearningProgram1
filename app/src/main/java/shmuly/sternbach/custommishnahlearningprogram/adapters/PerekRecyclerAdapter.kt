@@ -1,4 +1,4 @@
-package shmuly.sternbach.custommishnahlearningprogram
+package shmuly.sternbach.custommishnahlearningprogram.adapters
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import shmuly.sternbach.custommishnahlearningprogram.R
 
 private const val TAG = "PerekRecyclerAdapter"
 
