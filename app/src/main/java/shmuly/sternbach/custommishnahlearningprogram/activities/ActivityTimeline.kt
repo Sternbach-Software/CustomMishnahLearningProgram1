@@ -5,14 +5,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.l4digital.fastscroll.FastScrollView
 import shmuly.sternbach.custommishnahlearningprogram.R
-import shmuly.sternbach.custommishnahlearningprogram.adapters.UserAdapter
+import shmuly.sternbach.custommishnahlearningprogram.adapters.UnitAdapter
 
 class ActivityTimeline: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.mfast_scroller)
         val recyclerView = findViewById<FastScrollView>(R.id.mfast_scroller)
-        recyclerView.setAdapter(UserAdapter(program))
+        recyclerView.setAdapter(UnitAdapter(program))
         recyclerView.setLayoutManager(LinearLayoutManager(this))
     }
 }
@@ -28,7 +28,7 @@ class ActivityTimeline: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.fast_scroller)
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
-        recyclerView.adapter = UserAdapter(program)
+        recyclerView.adapter = UnitAdapter(program)
         recyclerView.layoutManager = LinearLayoutManager(this)
     }
 }*/

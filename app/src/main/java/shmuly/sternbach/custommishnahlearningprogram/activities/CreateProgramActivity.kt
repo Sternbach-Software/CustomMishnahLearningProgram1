@@ -20,12 +20,14 @@ import com.google.android.material.textfield.TextInputLayout
 import shmuly.sternbach.custommishnahlearningprogram.*
 import shmuly.sternbach.custommishnahlearningprogram.adapters.StartEndAdapter
 import shmuly.sternbach.custommishnahlearningprogram.data.Mishnah
+import shmuly.sternbach.custommishnahlearningprogram.data.Program
+import shmuly.sternbach.custommishnahlearningprogram.data.units.ProgramUnitMaterial
 import timber.log.Timber
 import java.time.LocalDate
 import java.time.Period
 var programInitialized = false
-//lateinit var program: Map<LocalDate, MutablePair<ProgramUnit<String>?, MutableList<ProgramUnit<String>>>>
-lateinit var program: Map<LocalDate, MutablePair<String?, MutableList<String>>>
+lateinit var program: Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>
+//lateinit var program: Map<LocalDate, MutablePair<String?, MutableList<String>>>
 class CreateProgramActivity : AppCompatActivity(), CallbackListener {
     val list = mutableListOf<Pair<Mishnah, Mishnah>>()
     lateinit var adapter: StartEndAdapter
@@ -109,13 +111,14 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
 //            )
 //        }
             Toast.makeText(this, "Saving...", Toast.LENGTH_SHORT).show()
-            programFile.delete()
-            programFile.createNewFile()
-            programFile.writeText(unDateMappedProgram.first.joinToString("~", postfix = "\n") { "${it.first}|${it.second}" })
-            programFile.appendText(unDateMappedProgram.second.joinToString("~") { "${it.first}|${it.second}" })
-            //(application as ReviewApplication).programBox.put(Program(program = program))
+//            programFile.delete()
+//            programFile.createNewFile()
+//            programFile.writeText(unDateMappedProgram.first.joinToString("~", postfix = "\n") { "${it.first}|${it.second}" })
+//            programFile.appendText(unDateMappedProgram.second.joinToString("~") { "${it.first}|${it.second}" })
+            programBox.put(Program(program = program))
             Toast.makeText(this, "Done saving.", Toast.LENGTH_SHORT).show()
             Timber.d("Program: $program")
+            finish()
         }
     }
 
@@ -151,12 +154,12 @@ data class MutablePair<A,B>(var first: A, var second: B)
  * TODO consider making original data structure more suitable to this, like returning a list of reviews for every date instead of adding each review unit to a list of strings
  * @return date to Pair<content for the date (null if no new material and just reviews, reviews>
  * */
-//fun Pair<MutableList<Pair<ProgramUnit<String>, LocalDate>>, MutableList<Pair<ProgramUnit<String>, LocalDate>>>.toDateMap(): Map<LocalDate, MutablePair<ProgramUnit<String>?, MutableList<ProgramUnit<String>>>> {
-fun Pair<MutableList<Pair<String, LocalDate>>, MutableList<Pair<String, LocalDate>>>.toDateMap(): Map<LocalDate, MutablePair<String?, MutableList<String>>> {
+fun Pair<MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>, MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>>.toDateMap(): Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>> {
+//fun Pair<MutableList<Pair<String, LocalDate>>, MutableList<Pair<String, LocalDate>>>.toDateMap(): Map<LocalDate, MutablePair<String?, MutableList<String>>> {
     val content = this.first
     val reviews = this.second
-//    val map = mutableMapOf<LocalDate, MutablePair<ProgramUnit<String>?, MutableList<ProgramUnit<String>>>>()
-    val map = mutableMapOf<LocalDate, MutablePair<String?, MutableList<String>>>()
+    val map = mutableMapOf<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>()
+//    val map = mutableMapOf<LocalDate, MutablePair<String?, MutableList<String>>>()
     for(content1 in content) {
         map[content1.second] = MutablePair(content1.first, mutableListOf())
     }
