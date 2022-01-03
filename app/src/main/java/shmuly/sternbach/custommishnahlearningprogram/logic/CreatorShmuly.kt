@@ -1,8 +1,9 @@
 package shmuly.sternbach.custommishnahlearningprogram
 
-import shmuly.sternbach.custommishnahlearningprogram.activities.MutablePair
-import shmuly.sternbach.custommishnahlearningprogram.activities.toDateMap
-import shmuly.sternbach.custommishnahlearningprogram.data.units.ProgramUnitMaterial
+import shmuly.sternbach.custommishnahlearningprogram.data.CompletionStatus
+import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
+//import shmuly.sternbach.custommishnahlearningprogram.activities.toDateMap
+//import shmuly.sternbach.custommishnahlearningprogram.data.units.ProgramUnitMaterial
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -110,111 +111,71 @@ abstract class LearningProgramMaker {
     fun generateProgram(
         startDate: LocalDate,
         intervalToLearnNewMaterial: Period,
-        numUnitsPerInterval: Int
-    ): Pair<
-            MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>,
-            MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>
-            > {
-        val listOfNewMaterial = mutableListOf<Pair<ProgramUnitMaterial<String>, LocalDate>>()
-        val listOfReviews = mutableListOf<Pair<ProgramUnitMaterial<String>, LocalDate>>()
+        numUnitsPerInterval: Int,
+        programID: Int
+    ): Pair<List<ProgramUnit>, List<ProgramUnit>> {
+        val listOfNewMaterial = mutableListOf<ProgramUnit>()
+        val listOfReviews = mutableListOf<ProgramUnit>()
         var currentDate = startDate
 //            var counter = 0
-        val listOfMolecules = listOfPrograms.flatten()
-        val listOfUnits = listOfMolecules.windowed(numUnitsPerInterval, numUnitsPerInterval, true)
-        for (unit in listOfUnits) {
-            populateNewMaterialAndReviews(unit, listOfNewMaterial, currentDate, listOfReviews)
+        val listOfMaterialStrings = listOfPrograms.flatten()
+        val listOfUnits = listOfMaterialStrings.windowed(numUnitsPerInterval, numUnitsPerInterval, true)
+        for (index in listOfUnits.indices) {
+            populateNewMaterialAndReviews(
+                listOfUnits[index],
+                listOfNewMaterial,
+                currentDate,
+                listOfReviews,
+                programID,
+                index
+            )
             currentDate = currentDate.plus(intervalToLearnNewMaterial)
         }
-//            programLoop@ for (index in listOfPrograms.indices) {
-//                val program = listOfPrograms[index]
-//                populationLoop@/*just for documentation*/ while (true/*counter < program.size*/) {//this loop populates list new material and reviews
-//                    //TODO support half units ("Berachos 1:1 - Berachos 1:1.5", "Berachos 1:1.5  - Berachos 1:2", third units, etc.
-//                    val startIndex = counter
-//                    var endIndex = program.size - 1
-//                    if (counter + numUnitsPerInterval < program.size) {
-//                        endIndex = counter + numUnitsPerInterval - 1
-//                        populateNewMaterialAndReviews(
-//                            program,
-//                            startIndex,
-//                            endIndex,
-//                            listOfNewMaterial,
-//                            currentDate,
-//                            listOfReviews
-//                        )
-//                        counter += numUnitsPerInterval
-//                        currentDate = currentDate.plus(intervalToLearnNewMaterial)
-//                    } else { //this is last iteration for current list. If there is another list after this one, continue the iteration taking from that one, otherwise, this is the last iteration and then the program creation is done
-//                        if(index != listOfPrograms.size - 1) { //there are more lists
-//                            //TODO test this edge case to make sure I solved it right
-//                            //program is 10 long, counter is at 9 and numUnitsPerInterval is 4, so take 1 from this list and take 3 from the next list
-////                            val numToTakeFromThisList = program.size /*e.g. 10*/ - counter /*e.g. 9*/ //lema'aseh the end unit the user is going to see (according to the way we are doing it now) will be the one in the next list, so there is no such thing in our algorithm as "taking" the elements in the middle (becuase they are not actually going into what the user sees), so this variable is meaningless (it may be meaningful in an algorithm in which there would be a need for having every intermediary element in some list)
-//                            val numToTakeFromNextList = (counter /*9*/ + numUnitsPerInterval /*4*/) /*13*/ - program.size /*10*/ /* = 3*/
-//                            if(numToTakeFromNextList == 0) {//there are exactly enough units left in this list to keep at the pace and start from counter = 0 in the next list
-//                                val endIndex = counter/*already set to last valid index/entry before the parent "if"*/
-//                                populateNewMaterialAndReviews(
-//                                    program,
-//                                    startIndex,
-//                                    endIndex,
-//                                    listOfNewMaterial,
-//                                    currentDate,
-//                                    listOfReviews
-//                                )
-//                                counter = 0
-//                            } else {
-//                                val list = mutableListOf<String>()
-//                                for(i in startIndex until program.size) list.add(program[i]) //take all remaining units from previous program
-//                                val nextProgram = listOfPrograms[index + 1]
-//                                counter = numToTakeFromNextList.minus(1) /*for index instead of size*/ // now counter = 2
-//                                for(i in 0..counter) list.add(nextProgram[i]) /*take remaining units from next program*/ /*make endUnit 3rd unit in next list*/
-//                                populateNewMaterialAndReviews(
-//                                    list,
-//                                    listOfNewMaterial,
-//                                    currentDate,
-//                                    listOfReviews
-//                                )
-//                                counter += 1 /*start the next iteration from the next one so that we don't take the same mishna twice*/
-//                            }
-//                            continue@programLoop
-//                        } else { //no more lists, so take whatever is left from this list and the user will "have a half-day on the last day of school -- Hurray!" if there are not enough left for a full workload (e.g. 4 mishnayos on a regular day when there are only 3 left today)
-//                            populateNewMaterialAndReviews(
-//                                program,
-//                                startIndex,
-//                                endIndex/*already set to last valid index/entry before the parent "if"*/,
-//                                listOfNewMaterial,
-//                                currentDate,
-//                                listOfReviews
-//                            )
-//                            break
-//                        }
-//                    }
-//                }
-//            }
         return listOfNewMaterial to listOfReviews
     }
 
     private fun populateNewMaterialAndReviews(
         units: List<String>,
-        listOfNewMaterial: MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>,
+        listOfNewMaterial: MutableList<ProgramUnit>,
         currentDate: LocalDate,
-        listOfReviews: MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>
+        listOfReviews: MutableList<ProgramUnit>,
+        programID: Int,
+        group: Int
     ) {
-        val programUnit = ProgramUnitMaterial(units)
-        listOfNewMaterial.add(programUnit to currentDate)
-        populateListOfReviews(listOfReviews, programUnit, currentDate)
+        for(index in units.indices) {
+            val programUnit = ProgramUnit(
+                units[index],
+                currentDate,
+                false/*first do new material*/,
+                programID,
+                group,
+                index,
+                CompletionStatus.NONE
+            )
+            listOfNewMaterial.add(programUnit)
+            populateListOfReviews(listOfReviews, programUnit, currentDate)
+        }
     }
 
     private fun populateListOfReviews(
-        listOfReviews: MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>,
-        intervaledUnitMaterial: ProgramUnitMaterial<String>,
+        listOfReviews: MutableList<ProgramUnit>,
+        intervaledUnitMaterial: ProgramUnit,
         currentDate: LocalDate
     ) {
-        for (reviewInterval in reviewIntervals)
+        for (reviewInterval in reviewIntervals) {
             listOfReviews.add(
-                Pair(
-                    intervaledUnitMaterial,
-                    currentDate.plus(Period.of(0,0,reviewInterval))
+                intervaledUnitMaterial.copy(
+                    isReview = true,
+                    date = currentDate.plus(
+                        Period.of(
+                            0,
+                            0,
+                            reviewInterval
+                        )
+                    )
                 )
             )
+        }
     }
 }
 
@@ -472,7 +433,7 @@ fun main() {
                 )
             )
         }
-        val program = mishnayos.generateProgram(
+        /*val program = mishnayos.generateProgram(
             startDate = LocalDate.now(),
             intervalToLearnNewMaterial = Period.of(0, 0, 1),
             4
@@ -482,7 +443,7 @@ fun main() {
         println("Program:       ${program.toList().take(2)}")
         println("String to map: ${b!!.toList().take(2)}")
         println("Map to string: ${a!!.take(200)}")
-        println("program correctness: ${b == program}")
+        println("program correctness: ${b == program}")*/
 //        File("Program.txt").apply {
 //            if (exists()) delete()
 //            createNewFile()
@@ -498,6 +459,7 @@ fun main() {
     }
     println(x)
 }
+/*
 
 fun stringToMap(databaseValue: String?): Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>? {
     //dd-dd-dddd|(abc%abc%abc)@{[abc=abc=abc]^[abc=abc-abc]} ~
@@ -596,4 +558,4 @@ fun mapToString(entityProperty: Map<LocalDate, MutablePair<ProgramUnitMaterial<S
             }
 //            ) //entityProperty?.listOfMaterials?.joinToString("~") }
     }
-}
+}*/

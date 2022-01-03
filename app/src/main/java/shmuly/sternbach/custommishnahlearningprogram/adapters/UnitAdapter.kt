@@ -11,26 +11,39 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import com.example.android.roomwordssample.ProgramUnitsViewModel
+//import com.example.android.roomwordssample.WordListAdapter
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.l4digital.fastscroll.FastScroller
-import io.objectbox.Box
-import io.objectbox.Property
 import shmuly.sternbach.custommishnahlearningprogram.*
-import shmuly.sternbach.custommishnahlearningprogram.activities.MutablePair
-import shmuly.sternbach.custommishnahlearningprogram.data.molecules.*
-import shmuly.sternbach.custommishnahlearningprogram.data.units.*
+import shmuly.sternbach.custommishnahlearningprogram.data.CompletionStatus
+import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
 import timber.log.Timber
 import java.time.LocalDate
 
 internal class UnitAdapter(
-    listOfDateToContentToReview: Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>
-) : RecyclerView.Adapter<UnitAdapter.ViewHolder>(), FastScroller.SectionIndexer {
+    val viewModel: ProgramUnitsViewModel
+) : ListAdapter<Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>, UnitAdapter.ViewHolder>(UNITS_COMPARATOR), FastScroller.SectionIndexer {
     fun ld(message: String) = Timber.d(message)
-    val list = listOfDateToContentToReview.toList()
-    val listOfExpanded = MutableList(list.size) { false }
-    val listOfDrawn = MutableList(list.size) { false } //whether sub-items were drawn
+    /*listOfDateToContentToReview: Map<LocalDate, Pair<List<ProgramUnit>/*new material*/, List<ProgramUnit>/*reviews*/>>,
+    val intervalSize: Int,
+    val repository: WordRepository,*/
+    var list = this.currentList
+    var listOfExpanded = MutableList(list.size) { false }
+    var listOfDrawn = MutableList(list.size) { false } //whether sub-items were drawn
+
+    override fun onCurrentListChanged(
+        previousList: MutableList<Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>>,
+        currentList: MutableList<Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>>
+    ) {
+        super.onCurrentListChanged(previousList, currentList)
+        listOfExpanded = MutableList(currentList.size) { false }
+        listOfDrawn = MutableList(currentList.size) { false }
+    }
     var doneIcon: Drawable? = null
     var skippedIcon: Drawable? = null
     var todoIcon: Drawable? = null
@@ -71,130 +84,56 @@ internal class UnitAdapter(
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        val pair = list[(position)]
+        val pair = getItem(position)
         ld("OnBindViewHolder: pair=$pair")
         viewHolder.date.text = formatLocalDate(pair.first)
-        viewHolder.title.text =
-            if (pair.second.first?.listOfMaterials?.first() == "null") "Review".also { ld("Called == null") } else pair.second.first.toString()
-                .also { ld("Called not null, list = ${pair.second.first!!.listOfMaterials}") }
-        val toSet = pair.second.second
-        viewHolder.progressIndicator.max = toSet.sumBy { it.listOfMaterials.size }
-        viewHolder.reviews.text = toSet.joinToString("\n")
+        val newMaterialString = if (pair.second.isEmpty()) "Review"
+        else getOverviewString(pair.second) /*Brachos 1:1 - Brachos 1:4*/
+
+        viewHolder.title.text = newMaterialString
+        viewHolder.progressIndicator.max = pair.second.size + pair.third.size
+        viewHolder.reviews.text = getOverviewString(pair.third)
+        val selector: (ProgramUnit) -> Int = { (if (it.isCompleted) 1 else 0) }
+        viewHolder.progressIndicator.progress = pair.second.sumOf(selector) + pair.third.sumOf(selector)
         val resources = viewHolder.image.resources
         val lambda = { view: View ->
             if (!listOfExpanded[position] && !listOfDrawn[position]) {
-                val allIndividualUnits = toSet.flatMap { it.listOfMaterials }
-                ld("allIndividualUnits=$allIndividualUnits")
-                for (index in allIndividualUnits.indices) {
+                ld("allIndividualUnits=${pair.third}")
+                for (index in pair.third.indices) {
                     viewHolder.list.also {
                         LayoutInflater.from(it.context)
-                            .inflate(R.layout.individual_mishnah_review_sub_item, it, false).apply {
-                                val unit = allIndividualUnits[index]
+                            .inflate(R.layout.individual_mishnah_review_sub_item, it, false)
+                            .apply {
+                                val unit = pair.third[index]
+                                findViewById<TextView>(R.id.unit_to_review).text = unit.material
                                 val toggleGroup =
                                     findViewById<MaterialButtonToggleGroup>(R.id.togggle_group)
+                                when {
+                                    unit.isCompleted -> toggleGroup.check(R.id.complete_button)
+                                    unit.isSkipped -> toggleGroup.check(R.id.skip_button)
+                                    unit.isTODO -> toggleGroup.check(R.id.todo_button)
+                                }
                                 toggleGroup.addOnButtonCheckedListener { group, id, isChecked ->
                                     when (id) {
                                         R.id.todo_button -> {
-                                            val toPut = TODOMolecule(
-                                                molecule = unit,
-                                                date = pair.first
-                                            )
-                                            ld("Contained: ${containsTODOMolecule(unit, pair.first)}")
-                                            if(isChecked) todoMoleculesBox.put(toPut)
-                                            else removeTODOMolecule(unit, pair.first)
+                                            unit.completedStatus =
+                                                if (isChecked) CompletionStatus.TODO
+                                                else CompletionStatus.NONE
                                         }
                                         R.id.skip_button -> {
-                                            val toPut = SkippedMolecule(
-                                                molecule = unit,
-                                                date = pair.first
-                                            )
-                                            ld("Contained: ${containsSkippedMolecule(unit, pair.first)}")
-                                            if(isChecked) skippedMoleculesBox.put(toPut)
-                                            else removeSkippedMolecule(unit, pair.first)
+                                            unit.completedStatus =
+                                                if (isChecked) CompletionStatus.SKIPPED
+                                                else CompletionStatus.NONE
                                         }
                                         R.id.complete_button -> {
-
-                                            val toPut = CompletedMolecule(
-                                                molecule = unit,
-                                                date = pair.first
-                                            )
-                                            ld("Contained: ${containsCompletedMolecule(unit, pair.first)}")
-                                            if(isChecked) completedMoleculesBox.put(toPut)
-                                            else removeCompletedMolecule(unit, pair.first)
+                                            unit.completedStatus =
+                                                if (isChecked) CompletionStatus.COMPLETED
+                                                else CompletionStatus.NONE
+//                                            viewHolder.progressIndicator.progress++ //TODO not fully implemented
                                         }
                                     }
+                                    viewModel.update(unit)
                                 }
-                                when {
-                                    containsCompletedMolecule(unit, pair.first) -> toggleGroup.check(R.id.complete_button)
-                                    containsSkippedMolecule(unit, pair.first) -> toggleGroup.check(R.id.skip_button)
-                                    containsTODOMolecule(unit, pair.first) -> toggleGroup.check(R.id.todo_button)
-                                }
-                                findViewById<TextView>(R.id.unit_to_review).text =
-                                    unit.also { ld("allIndividualUnits[index]=$it") }
-                                findViewById<Button>(R.id.todo_button)
-                                    .also {
-                                        if (todoUnitsBox.all.any {
-                                                it.containsThisUnit(
-                                                    unit,
-                                                    pair.first
-                                                )
-                                            }) it.performClick()
-                                    }
-                                    .setOnClickListener {
-                                        todoUnitsBox.put(
-                                            TODOUnit(
-                                                programUnitMaterial = ProgramUnitMaterial(
-                                                    listOf(
-                                                        unit
-                                                    )
-                                                ),
-                                                date = pair.first
-                                            )
-                                        )
-                                    }
-                                findViewById<Button>(R.id.skip_button)
-                                    .also {
-                                        if (skippedUnitsBox.all.any {
-                                                it.containsThisUnit(
-                                                    unit,
-                                                    pair.first
-                                                )
-                                            }) it.performClick()
-                                    }
-                                    .setOnClickListener {
-                                        skippedUnitsBox.put(
-                                            SkippedUnit(
-                                                programUnitMaterial = ProgramUnitMaterial(
-                                                    listOf(
-                                                        unit
-                                                    )
-                                                ),
-                                                date = pair.first
-                                            )
-                                        )
-                                    }
-//                            completedBox.query { this.filter { it.containsThisUnit(unit, pair.first) } }.findFirst() != null //TODO is this more efficient than getting all entities and using stdlib to check?
-                                findViewById<Button>(R.id.complete_button)
-                                    .also {
-                                        if (completedUnitsBox.all.any {
-                                                it.containsThisUnit(
-                                                    unit,
-                                                    pair.first
-                                                )
-                                            }) it.performClick()
-                                    }
-                                    .setOnClickListener {
-                                        completedUnitsBox.put(
-                                            CompletedUnit(
-                                                programUnitMaterial = ProgramUnitMaterial(
-                                                    listOf(
-                                                        unit
-                                                    )
-                                                ),
-                                                date = pair.first
-                                            )
-                                        )
-                                    }
                                 it.addView(this)
                             }
                         it.visibility = View.VISIBLE
@@ -235,7 +174,9 @@ internal class UnitAdapter(
                     viewHolder.itemView.context.theme
                 )
             )
-//            if(pair.first.isAfter(LocalDate.now())){}//move date ahead, remove review from today and add it to the date that you completed
+            updateCompletionStatus(pair, CompletionStatus.COMPLETED)
+            viewHolder.progressIndicator.progress = viewHolder.progressIndicator.max
+//            if(pair.first.isAfter(LocalDate.now())){}//move date ahead, remove review from today and add it to the date that you completed TODO
 //            completedUnitsFile.appendText("~${pair.first}")
 //            setOfCompleted.add(pair.first)
         }
@@ -246,8 +187,8 @@ internal class UnitAdapter(
                     viewHolder.itemView.context.theme
                 )
             )
-//            skippedUnitsFile.appendText("~${pair.first}")
-//            setOfSkipped.add(pair.first)
+            updateCompletionStatus(pair, CompletionStatus.SKIPPED)
+            viewHolder.progressIndicator.progress = 0
         }
         viewHolder.todo.setOnClickListener {
             viewHolder.image.setImageDrawable(
@@ -256,109 +197,75 @@ internal class UnitAdapter(
                     viewHolder.itemView.context.theme
                 )
             )
-            //            skippedUnitsFile.appendText("~${pair.first}")
-//            setOfSkipped.add(pair.first)
+            updateCompletionStatus(pair, CompletionStatus.TODO)
+            viewHolder.progressIndicator.progress = 0
         }
         viewHolder.clear.setOnClickListener {
             viewHolder.image.setImageDrawable(null)
         }
     }
 
-    private fun containsTODOMolecule(
-        unit: String,
-        date: LocalDate
-    ) = todoMoleculesBox.containsMolecule(
-        TODOMolecule_.molecule,
-        TODOMolecule_.date,
-        unit,
-        date
-    )
-
-    private fun containsSkippedMolecule(
-        unit: String,
-        date: LocalDate
-    ) = skippedMoleculesBox.containsMolecule(
-        SkippedMolecule_.molecule,
-        SkippedMolecule_.date,
-        unit,
-        date
-    )
-
-    private fun containsCompletedMolecule(
-        unit: String,
-        date: LocalDate
-    ) = completedMoleculesBox.containsMolecule(
-        CompletedMolecule_.molecule,
-        CompletedMolecule_.date,
-        unit,
-        date
-    )
-
-    private fun removeCompletedMolecule(
-        unit: String,
-        date: LocalDate
-    ) {
-        completedMoleculesBox.removeMolecule(
-            CompletedMolecule_.molecule,
-            CompletedMolecule_.date,
-            unit,
-            date
-        )
+    private fun updateCompletionStatus(pair: Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>, status: Int) {
+        for (unit in pair.second + pair.third) {
+            unit.completedStatus = status
+            viewModel.update(unit)
+        }
     }
 
-    private fun removeSkippedMolecule(
-        unit: String,
-        date: LocalDate
-    ) {
-        skippedMoleculesBox.removeMolecule(
-            SkippedMolecule_.molecule,
-            SkippedMolecule_.date,
-            unit,
-            date
-        )
+    private fun getIntervalSize(units: List<ProgramUnit>): Int {
+        val firstGroup = units.first().group
+        var intervalSize = 0
+        for (it in units) { //see how long the longest group is
+            if (it.group == firstGroup) intervalSize++ else break
+        }
+        return intervalSize
     }
 
-    private fun ProgramUnitDated<String>.containsThisUnit(
-        unit: String,
-        dateToCompare: LocalDate
-    ) =
-        programUnitMaterial
-            ?.listOfMaterials
-            ?.contains(unit)
-            ?.and(
-                date?.isEqual(dateToCompare) == true
-            ) == true
-
-    override fun getItemCount(): Int = list.size
+    /**
+     * Returns "Brachos 1:1 - Brachos 1:4"\n...
+     * */
+    private fun getOverviewString(units: List<ProgramUnit>): String {
+        val stringBuilder = StringBuilder()
+        var counter = 0
+        var firstUnitInGroup = units[counter++]
+        //1,1,1,1,2,2,2,3,3,3,4,5,6
+        var previousUnit = firstUnitInGroup
+        var thisUnit = units[counter]
+        while(counter < units.size){
+            if(firstUnitInGroup.group == thisUnit.group) {
+                previousUnit = thisUnit
+            }
+            else {
+                stringBuilder.appendLine(firstUnitInGroup.material + " - " + previousUnit.material)
+                firstUnitInGroup = thisUnit
+                previousUnit = firstUnitInGroup
+            }
+            thisUnit = units[counter++]
+        }
+        return stringBuilder.toString()
+    }
     override fun getSectionText(position: Int): CharSequence {
-        return formatLocalDate(list[position].first)
+        return formatLocalDate(getItem(position).first)
     }
-}
+    companion object {
+        private val UNITS_COMPARATOR = object : DiffUtil.ItemCallback<Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>>() {
+            override fun areItemsTheSame(
+                oldItem: Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>,
+                newItem: Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>
+            ): Boolean {
+                return oldItem === newItem
+            }
 
-private fun <T> Box<T>.removeMolecule(property1: Property<T>, property2: Property<T>, unit: String, date: LocalDate) {
-    val find = query()
-        .apply(property1.equal(unit).and(property2.equal(date.toString())))
-        .build()
-        .findFirst()
-    if(find != null) {
-        ld("Find was not null: $find")
-        this.remove(find)
+            override fun areContentsTheSame(
+                oldItem: Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>,
+                newItem: Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>
+            ): Boolean {
+                return oldItem.first == newItem.first &&
+                        oldItem.second == newItem.second /*if new material is the same, then reviews should be the same also*/
+            }
+        }
     }
 }
-private fun <T> Box<T>.containsMolecule(property1: Property<T>, property2: Property<T>, unit: String, date: LocalDate): Boolean {
-    val find = query()
-        .apply(property1.equal(unit).and(property2.equal(date.toString())))
-        .build()
-        .count()
-    ld("Number found: $find")
-    return find > 0
-}
-fun removeTODOMolecule(unit: String, date: LocalDate) = todoMoleculesBox.removeMolecule(
-    TODOMolecule_.molecule,
-    TODOMolecule_.date,
-    unit,
-    date
-)
 fun ld(s: String) {
     Timber.d(s)
 }

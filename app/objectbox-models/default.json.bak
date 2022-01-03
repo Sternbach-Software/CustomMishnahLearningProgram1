@@ -1,0 +1,189 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:2101994107707638858",
+      "lastPropertyId": "3:6123857525702921567",
+      "name": "CompletedMolecule",
+      "properties": [
+        {
+          "id": "1:511941521166974874",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1856077715513311385",
+          "name": "molecule",
+          "indexId": "1:5815879730266167221",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:6123857525702921567",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:2459798713378398830",
+      "lastPropertyId": "3:1599964078110419556",
+      "name": "CompletedUnit",
+      "properties": [
+        {
+          "id": "1:8266508804114115363",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8833876304963740856",
+          "name": "programUnitMaterial",
+          "type": 9
+        },
+        {
+          "id": "3:1599964078110419556",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:1259256034293637380",
+      "lastPropertyId": "2:3011131048213824512",
+      "name": "Program",
+      "properties": [
+        {
+          "id": "1:3462553854782374747",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3011131048213824512",
+          "name": "program",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:4317071079416565536",
+      "lastPropertyId": "3:7063922462067451375",
+      "name": "SkippedMolecule",
+      "properties": [
+        {
+          "id": "1:3346874908432447615",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:633831653243138028",
+          "name": "molecule",
+          "indexId": "2:1905054781796345220",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:7063922462067451375",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:4767867093574496376",
+      "lastPropertyId": "3:4202732504849533888",
+      "name": "SkippedUnit",
+      "properties": [
+        {
+          "id": "1:1055967364224932305",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1684428888440498095",
+          "name": "programUnitMaterial",
+          "indexId": "3:8815522134276653896",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:4202732504849533888",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:742019308493701136",
+      "lastPropertyId": "3:1274726405558329429",
+      "name": "TODOMolecule",
+      "properties": [
+        {
+          "id": "1:4215929215822667456",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4166234702134557897",
+          "name": "molecule",
+          "indexId": "4:1168055146402895607",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:1274726405558329429",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "7:422848500330189242",
+      "lastPropertyId": "3:9086693296819744961",
+      "name": "TODOUnit",
+      "properties": [
+        {
+          "id": "1:2266110093913231747",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7359249540515417216",
+          "name": "programUnitMaterial",
+          "type": 9
+        },
+        {
+          "id": "3:9086693296819744961",
+          "name": "date",
+          "type": 9
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "7:422848500330189242",
+  "lastIndexId": "4:1168055146402895607",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

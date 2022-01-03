@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.core.text.isDigitsOnly
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,21 +18,28 @@ import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import shmuly.sternbach.custommishnahlearningprogram.*
 import shmuly.sternbach.custommishnahlearningprogram.adapters.StartEndAdapter
+import shmuly.sternbach.custommishnahlearningprogram.adapters.ld
 import shmuly.sternbach.custommishnahlearningprogram.data.Mishnah
-import shmuly.sternbach.custommishnahlearningprogram.data.Program
-import shmuly.sternbach.custommishnahlearningprogram.data.units.ProgramUnitMaterial
+//import shmuly.sternbach.custommishnahlearningprogram.data.units.ProgramUnitMaterial
 import timber.log.Timber
 import java.time.LocalDate
 import java.time.Period
 var programInitialized = false
-lateinit var program: Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>
+//lateinit var program: Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>
 //lateinit var program: Map<LocalDate, MutablePair<String?, MutableList<String>>>
 class CreateProgramActivity : AppCompatActivity(), CallbackListener {
     val list = mutableListOf<Pair<Mishnah, Mishnah>>()
     lateinit var adapter: StartEndAdapter
     lateinit var startDate: LocalDate
+    @DelicateCoroutinesApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_set_program)
@@ -70,7 +78,7 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
         dateTextInputLayout.setEndIconOnClickListener(lambda)
         date.setOnClickListener(lambda)
         doneFab.setOnClickListener {
-            Toast.makeText(this, "Program being saved. If there is a program already running, it will be overwritten.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Program being saved. If there is a program already running, it will be overwritten.", Toast.LENGTH_LONG).show()//TODO edit this messsage when implementing multiple programs
 
             for(program in list){
                 val startIndex = program.first.masechtaIndex    // mishnayos.chapterNames.indexOf("Pe'ah")
@@ -95,30 +103,29 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
             val unDateMappedProgram = mishnayos.generateProgram(
                 startDate = startDate,
                 intervalToLearnNewMaterial = Period.of(0, 0, 1), //TODO add ability to change
-                speed.text.toString().toInt()
-            ) //for convinence of using pre-existing serialize-to-file method
-            program = unDateMappedProgram.toDateMap()
-            programInitialized = true
-//        File("Program.txt").apply {
-//            if (exists()) delete()
-//            createNewFile()
-//            appendText("New material: ${program.first}\n")
-//            appendText(
-//                "Reviews: ${
-//                    program.second.sortedBy { it.second }
-//                        .mapIndexed { index, pair -> "$index~$pair" }
-//                }"
-//            )
-//        }
-            Toast.makeText(this, "Saving...", Toast.LENGTH_SHORT).show()
-//            programFile.delete()
-//            programFile.createNewFile()
-//            programFile.writeText(unDateMappedProgram.first.joinToString("~", postfix = "\n") { "${it.first}|${it.second}" })
-//            programFile.appendText(unDateMappedProgram.second.joinToString("~") { "${it.first}|${it.second}" })
-            programBox.put(Program(program = program))
-            Toast.makeText(this, "Done saving.", Toast.LENGTH_SHORT).show()
-            Timber.d("Program: $program")
-            finish()
+                speed.text.toString().toInt(),
+                CONSTANTS.PROGRAM_ID_MISHNAYOS
+            )
+//            Toast.makeText(this, "Saving program...", Toast.LENGTH_SHORT).show()
+            mcoroutineScope.launch(Dispatchers.IO) {
+                val list = unDateMappedProgram.first + unDateMappedProgram.second  /*TODO consider avoiding having to combine these by only creating one list in generateProgram(), though I am keeping it this way in case I want to change the mechanics later*/
+                ld("Program about to insert: ${list.take(10)}")
+                (application as ReviewApplication).repository.also {
+                    list.forEach { unit ->
+                        it.insert(unit)
+                        ld("Unit inserted: $unit")
+                    }
+                    ld("Program from db: ${it.allTimelines.first()}")
+                    ld("Today's material from db: ${it.todaysMaterial.first()}")
+                    runOnUiThread {
+                        programInitialized = true
+                        sharedPreferences.edit(true) { putString("program_created", " ") }
+                        Toast.makeText(this@CreateProgramActivity, "Done saving program.", Toast.LENGTH_SHORT)
+                            .show()
+                        finish()
+                    }
+                }
+            }
         }
     }
 
@@ -149,11 +156,14 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
     }
 }
 data class MutablePair<A,B>(var first: A, var second: B)
+data class MutableTriple<A,B,C>(var first: A, var second: B, var third: C)
+data class Quad<A,B,C,D>(val first: A, val second: B, val third: C, val fourth: D)
 /**
  *
  * TODO consider making original data structure more suitable to this, like returning a list of reviews for every date instead of adding each review unit to a list of strings
  * @return date to Pair<content for the date (null if no new material and just reviews, reviews>
  * */
+/*
 fun Pair<MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>, MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>>.toDateMap(): Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>> {
 //fun Pair<MutableList<Pair<String, LocalDate>>, MutableList<Pair<String, LocalDate>>>.toDateMap(): Map<LocalDate, MutablePair<String?, MutableList<String>>> {
     val content = this.first
@@ -169,3 +179,4 @@ fun Pair<MutableList<Pair<ProgramUnitMaterial<String>, LocalDate>>, MutableList<
     }
     return map.toSortedMap()
 }
+*/
