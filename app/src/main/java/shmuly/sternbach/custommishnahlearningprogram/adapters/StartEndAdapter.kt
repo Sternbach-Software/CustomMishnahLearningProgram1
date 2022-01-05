@@ -12,22 +12,14 @@ import shmuly.sternbach.custommishnahlearningprogram.R
 import shmuly.sternbach.custommishnahlearningprogram.data.Mishnah
 
 class StartEndAdapter(
-    val startAndEndUnits: MutableList<Pair<Mishnah, Mishnah>>,
+    val startAndEndUnits: MutableList<Mishnah>,
     val callbackListener: CallbackListener,
     val fragmentManager: FragmentManager
 ) : RecyclerView.Adapter<StartEndAdapter.ViewHolder>() {
 
     inner class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
-        val startUnit = view.findViewById<TextView>(R.id.start_mishnah)
-        val endUnit = view.findViewById<TextView>(R.id.end_mishnah)
-        init {
-            startUnit.setOnClickListener {
-                MishnahPickerDialog(callbackListener, adapterPosition, true).show(fragmentManager, "MishnahPicker")
-            }
-            endUnit.setOnClickListener {
-                MishnahPickerDialog(callbackListener, adapterPosition, false).show(fragmentManager, "MishnahPicker")
-            }
-        }
+        val unit = view.findViewById<TextView>(R.id.unit)
+        val label = view.findViewById<TextView>(R.id.label)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -39,9 +31,15 @@ class StartEndAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = startAndEndUnits[position]
-        holder.startUnit.text = item.first.toString()
-        holder.endUnit.text = item.second.toString()
+        val isStart = position % 2 != 0
+        holder.label.text = if (isStart) "Start:" else "End:"
+        holder.unit.setOnClickListener {
+            MishnahPickerDialog(callbackListener, position, isStart).show(
+                fragmentManager,
+                "MishnahPicker"
+            )
+        }
+        holder.unit.text = startAndEndUnits[position].toString()
     }
 
     override fun getItemCount(): Int = startAndEndUnits.size

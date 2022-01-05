@@ -54,21 +54,26 @@ class ProgramUnitsViewModel(private val repository: WordRepository) : ViewModel(
             if (it.isEmpty()) map.also { ld("List of program units recieved in live data was empty.") } else {
                 ld("List from live data was not empty")
                 var unit = it.first()
-                var triple =
-                    Triple(unit.date, mutableListOf<ProgramUnit>(), mutableListOf<ProgramUnit>())
+                var triple = Triple(unit.date, mutableListOf<ProgramUnit>(), mutableListOf<ProgramUnit>())
                 if (unit.isReview) triple.third.add(unit)
                 else triple.second.add(unit)
 
-                for (index in 1 until it.size) {
-                    unit = it[index]
-                    if (unit.date == triple.first) {
-                        if (unit.isReview) triple.third.add(unit)
-                        else triple.second.add(unit)
-                    } else {
-                        map.add(triple)
-                        triple = Triple(unit.date, mutableListOf(), mutableListOf())
-                        if (unit.isReview) triple.third.add(unit)
-                        else triple.second.add(unit)
+                if(it.size == 1) map.add(triple)
+                else {
+                    for (index in 1 until it.size) {
+                        unit = it[index]
+                        if (unit.date == triple.first) {
+                            if (unit.isReview) triple.third.add(unit)
+                            else triple.second.add(unit)
+                            if(index == it.size - 1 /*if you are at the last one and they are all the same date*/) {
+                                map.add(triple)
+                            }
+                        } else {
+                            map.add(triple)
+                            triple = Triple(unit.date, mutableListOf(), mutableListOf())
+                            if (unit.isReview) triple.third.add(unit)
+                            else triple.second.add(unit)
+                        }
                     }
                 }
                 map

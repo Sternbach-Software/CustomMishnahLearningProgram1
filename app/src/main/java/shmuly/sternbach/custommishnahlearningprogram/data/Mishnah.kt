@@ -8,6 +8,6 @@ data class Mishnah(
     var mishnah: Int = -1
 ): ProgramType {
     override fun toString(): String {
-        return "$masechtaString $perekString:$mishnah"
+        return if(masechtaString == "") "" else "$masechtaString $perekString:$mishnah"
     }
 }

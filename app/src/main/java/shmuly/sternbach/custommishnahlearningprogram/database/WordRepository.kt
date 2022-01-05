@@ -19,6 +19,8 @@ import androidx.annotation.WorkerThread
 import com.example.android.roomwordssample.WordDao
 import kotlinx.coroutines.flow.Flow
 import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * Abstracted Repository as promoted by the Architecture Guide.
@@ -30,14 +32,14 @@ class WordRepository(private val wordDao: WordDao) {
     // Observed Flow will notify the observer when the data has changed.
 //    val allWords: Flow<List<Word>> = wordDao.getAlphabetizedWords()
     val allTimelines: Flow<List<ProgramUnit>> = wordDao.getAllTimelines()
-    val todaysMaterial: Flow<List<ProgramUnit>> = wordDao.getTodaysMaterial()
+    val todaysMaterial: Flow<List<ProgramUnit>> = wordDao.getMaterialByDay(DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now()))
     // By default Room runs suspend queries off the main thread, therefore, we don't need to
     // implement anything else to ensure we're not doing long running database work
     // off the main thread.
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
     suspend fun insertAll(units: List<ProgramUnit>) {
-        wordDao.insertAll(*units.toTypedArray())
+        wordDao.insertAll(units)
     }
     @Suppress("RedundantSuspendModifier")
     @WorkerThread
@@ -48,5 +50,10 @@ class WordRepository(private val wordDao: WordDao) {
     @WorkerThread
     suspend fun update(unit: ProgramUnit) {
         wordDao.update(unit)
+    }
+    @Suppress("RedundantSuspendModifier")
+    @WorkerThread
+    suspend fun deleteTimeline(programID: Int) {
+        wordDao.deleteTimeline(programID)
     }
 }

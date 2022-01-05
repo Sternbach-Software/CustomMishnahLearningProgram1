@@ -4,10 +4,10 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
+import java.util.*
 
 @Entity(tableName = "units_table")
 data class ProgramUnit(
-    @PrimaryKey
     @ColumnInfo(name = "material")
     val material: String,
 
@@ -16,7 +16,10 @@ data class ProgramUnit(
     val programID: Int,//TODO make this a string of the name of the program
     val group: Int/*if 20th unit in program, will be 20, so that reviews are sorted chronologically*/,
     val positionInGroup: Int,
-    var completedStatus: Int
+    var completedStatus: Int,
+
+    @PrimaryKey
+    val uuid: UUID = UUID.randomUUID()
 ) {
     val isCompleted: Boolean
         get() = completedStatus == CompletionStatus.COMPLETED

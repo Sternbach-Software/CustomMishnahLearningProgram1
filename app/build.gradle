@@ -45,9 +45,11 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.l4digital.fastscroll:fastscroll:2.0.1'
     implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation 'com.github.Stjinchan:ExpandableCardView:1.2.2'
 
     // Room components
     implementation "androidx.room:room-ktx:2.4.0"
+    testImplementation 'org.testng:testng:6.9.6'
     annotationProcessor "androidx.room:room-compiler:2.4.0"
     kapt 'androidx.room:room-compiler:2.4.0'
 

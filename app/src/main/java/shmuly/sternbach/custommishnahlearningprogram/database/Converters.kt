@@ -11,7 +11,7 @@ object Converters {
     }
 
     @TypeConverter
-    fun convertToDatabaseValue(entityProperty: LocalDate?): String {
+    fun convertToDatabaseValue(entityProperty: LocalDate): String {
         return entityProperty.toString()
     }
 }

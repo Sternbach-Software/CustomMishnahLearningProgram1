@@ -6,10 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.android.roomwordssample.ProgramUnitsViewModel
 import com.example.android.roomwordssample.WordViewModelFactory
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.l4digital.fastscroll.FastScrollView
 import shmuly.sternbach.custommishnahlearningprogram.R
 import shmuly.sternbach.custommishnahlearningprogram.ReviewApplication
 import shmuly.sternbach.custommishnahlearningprogram.adapters.UnitAdapter
+import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
+import java.time.LocalDate
 
 class ActivityTimeline: AppCompatActivity() {
 
@@ -27,10 +30,16 @@ class ActivityTimeline: AppCompatActivity() {
         // Add an observer on the LiveData returned by getAlphabetizedWords.
         // The onChanged() method fires when the observed data changes and the activity is
         // in the foreground.
+        var previousUnits = null as  List<Triple<LocalDate, List<ProgramUnit>, List<ProgramUnit>>>?
         programUnitsViewModel.allTimelines.observe(this) { units ->
             // Update the cached copy of the units in the adapter.
             units.let {
-                unitAdapter.submitList(it)
+                if(previousUnits == null) {
+                    findViewById<CircularProgressIndicator>(R.id.loading_circle).hide()
+                    previousUnits = it
+                    unitAdapter.submitList(it)
+                }
+                if(it.size != previousUnits?.size) /*don't update list if completion status changes*/ unitAdapter.submitList(it)
             }
         }
     }

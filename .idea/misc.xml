@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../.gradle/caches/transforms-3/bd1717d5ee753175216b6afa38266236/transformed/jetified-ExpandableCardView-1.2.2/res/layout/expandable_cardview.xml" value="0.2953125" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_baseline_calendar_today_24.xml" value="0.14270833333333333" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_done.xml" value="0.1" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/drawable/ic_skipped.xml" value="0.1" />
@@ -19,6 +20,13 @@
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/list_item_learn_start_and_end.xml" value="0.25" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/list_item_unit_card.xml" value="0.17171052631578948" />
         <entry key="..\:/Users/shmue/AndroidStudioProjects/CustomMishnahLearningProgram/app/src/main/res/layout/mishna_picker.xml" value="0.1265625" />
+        <entry key="app/src/main/res/drawable/arrow_down.xml" value="0.31145833333333334" />
+        <entry key="app/src/main/res/drawable/textview_border.xml" value="0.11597222222222223" />
+        <entry key="app/src/main/res/layout/activity_set_program.xml" value="0.19207039053667777" />
+        <entry key="app/src/main/res/layout/individual_mishnah_review_sub_item.xml" value="0.14361702127659576" />
+        <entry key="app/src/main/res/layout/list_item_learn_start_and_end.xml" value="0.375" />
+        <entry key="app/src/main/res/layout/list_item_unit_card.xml" value="0.2953125" />
+        <entry key="app/src/main/res/layout/mfast_scroller.xml" value="0.11865942028985507" />
       </map>
     </option>
   </component>

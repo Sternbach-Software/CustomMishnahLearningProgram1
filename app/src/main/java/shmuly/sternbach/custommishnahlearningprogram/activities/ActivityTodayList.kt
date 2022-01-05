@@ -31,7 +31,7 @@ class ActivityTodayList: AppCompatActivity() {
             // Update the cached copy of the words in the adapter.
             units.let {
                 if(it.isEmpty()) Toast.makeText(this, "Nothing to do today.", Toast.LENGTH_SHORT).show()
-                unitAdapter.submitList(it)
+                else unitAdapter.submitList(it)
             }
         }
     }

@@ -20,23 +20,18 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import shmuly.sternbach.custommishnahlearningprogram.*
 import shmuly.sternbach.custommishnahlearningprogram.adapters.StartEndAdapter
-import shmuly.sternbach.custommishnahlearningprogram.adapters.ld
 import shmuly.sternbach.custommishnahlearningprogram.data.Mishnah
 //import shmuly.sternbach.custommishnahlearningprogram.data.units.ProgramUnitMaterial
-import timber.log.Timber
 import java.time.LocalDate
 import java.time.Period
 var programInitialized = false
 //lateinit var program: Map<LocalDate, MutablePair<ProgramUnitMaterial<String>?, MutableList<ProgramUnitMaterial<String>>>>
 //lateinit var program: Map<LocalDate, MutablePair<String?, MutableList<String>>>
 class CreateProgramActivity : AppCompatActivity(), CallbackListener {
-    val list = mutableListOf<Pair<Mishnah, Mishnah>>()
+    val list = mutableListOf<Mishnah>()
     lateinit var adapter: StartEndAdapter
     lateinit var startDate: LocalDate
     @DelicateCoroutinesApi
@@ -53,7 +48,6 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
         val threeSixtyFourDay = findViewById<MaterialCheckBox>(R.id.review_364_days)
         val parsedText = findViewById<TextView>(R.id.parsed_text)
         val customTimes = findViewById<EditText>(R.id.custom_times)
-        val numReviews = findViewById<TextInputEditText>(R.id.num_reviews)
         val dateTextInputLayout = findViewById<TextInputLayout>(R.id.date_text_input_layout)
         val date = findViewById<AutoCompleteTextView>(R.id.date)
         val speed = findViewById<TextInputEditText>(R.id.speed)
@@ -64,7 +58,7 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
         addFab.setOnClickListener {
-            list.add(Mishnah() to Mishnah())
+            list.add(Mishnah())
             adapter.notifyItemInserted(list.size - 1)
         }
         val lambda = { _: View ->
@@ -78,11 +72,9 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
         dateTextInputLayout.setEndIconOnClickListener(lambda)
         date.setOnClickListener(lambda)
         doneFab.setOnClickListener {
-            Toast.makeText(this, "Program being saved. If there is a program already running, it will be overwritten.", Toast.LENGTH_LONG).show()//TODO edit this messsage when implementing multiple programs
-
-            for(program in list){
-                val startIndex = program.first.masechtaIndex    // mishnayos.chapterNames.indexOf("Pe'ah")
-                val endIndex = program.second.masechtaIndex + 1 //mishnayos.chapterNames.indexOf("Bikkurim") + 1 //exclusive when used as last index and inclusive when used as first endex, so save myself the math by doing it here
+            for(program in list.windowed(2,2,true)){
+                val startIndex = program[0].masechtaIndex    // mishnayos.chapterNames.indexOf("Pe'ah")
+                val endIndex = program[1].masechtaIndex + 1 //mishnayos.chapterNames.indexOf("Bikkurim") + 1 //exclusive when used as last index and inclusive when used as first endex, so save myself the math by doing it here
                 mishnayos.listOfPrograms.add(
                     mishnayos.listMappedToUnits(
                         mishnayos.chapterNames.subList(startIndex, endIndex),
@@ -93,30 +85,22 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
             if(oneDay.isChecked) mishnayos.reviewIntervals.add(1)
             if(eightDay.isChecked) mishnayos.reviewIntervals.add(8)
             if(thirtyEightDay.isChecked) mishnayos.reviewIntervals.add(38)
-            if(thirtyEightDay.isChecked) mishnayos.reviewIntervals.add(38)
             if(oneTwentyEightDay.isChecked) mishnayos.reviewIntervals.add(128)
             if(threeSixtyFourDay.isChecked) mishnayos.reviewIntervals.add(364)
             val customText = customTimes.text.toString()
             if(customText.isNotEmpty()) for(number in customTimesParsed(customText)) if(number.isNotEmpty() && number.isDigitsOnly()) mishnayos.reviewIntervals.add(number.toInt()) //TODO show user how much of their input is being parsed in case they made a mistake
-            if(threeSixtyFourDay.isChecked) mishnayos.reviewIntervals.add(364)
-            mishnayos.numReviewsPerUnit = numReviews.text.toString().toInt()
             val unDateMappedProgram = mishnayos.generateProgram(
                 startDate = startDate,
                 intervalToLearnNewMaterial = Period.of(0, 0, 1), //TODO add ability to change
                 speed.text.toString().toInt(),
                 CONSTANTS.PROGRAM_ID_MISHNAYOS
             )
-//            Toast.makeText(this, "Saving program...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Saving program...", Toast.LENGTH_SHORT).show()
             mcoroutineScope.launch(Dispatchers.IO) {
                 val list = unDateMappedProgram.first + unDateMappedProgram.second  /*TODO consider avoiding having to combine these by only creating one list in generateProgram(), though I am keeping it this way in case I want to change the mechanics later*/
-                ld("Program about to insert: ${list.take(10)}")
                 (application as ReviewApplication).repository.also {
-                    list.forEach { unit ->
-                        it.insert(unit)
-                        ld("Unit inserted: $unit")
-                    }
-                    ld("Program from db: ${it.allTimelines.first()}")
-                    ld("Today's material from db: ${it.todaysMaterial.first()}")
+                    it.deleteTimeline(CONSTANTS.PROGRAM_ID_MISHNAYOS)
+                    it.insertAll(list)
                     runOnUiThread {
                         programInitialized = true
                         sharedPreferences.edit(true) { putString("program_created", " ") }
@@ -140,12 +124,7 @@ class CreateProgramActivity : AppCompatActivity(), CallbackListener {
         perekIndex: Int,
         mishnah: Int
     ) {
-        val item = list[adapterPosition]
-        if (startSelected) {
-            item.first
-        } else {
-            item.second
-        }.also {
+        list[adapterPosition].also {
             it.masechtaString = masechtaString
             it.masechtaIndex = masechtaIndex
             it.perekString = perekString

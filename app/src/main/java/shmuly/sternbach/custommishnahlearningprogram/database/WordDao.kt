@@ -37,14 +37,14 @@ import java.time.LocalDate
 @Dao
 interface WordDao {
     companion object {
-        const val sortOrder = "ORDER BY date ASC, isReview ASC, programID DESC, `group` ASC, positionInGroup ASC"
+        const val sortOrder = "ORDER BY date ASC, isReview DESC, programID DESC, `group` ASC, positionInGroup ASC"
     }
 
 //    @Query("SELECT * FROM word_table ORDER BY word ASC")
 //    fun getAlphabetizedWords(): Flow<List<Word>>
 
-    @Query("SELECT * FROM units_table WHERE date = :today $sortOrder")
-    fun getTodaysMaterial(today: LocalDate = LocalDate.now()): Flow<List<ProgramUnit>>
+    @Query("SELECT * FROM units_table WHERE date = :day $sortOrder")
+    fun getMaterialByDay(day: String): Flow<List<ProgramUnit>>
 
     @Query("SELECT * from units_table WHERE programID = :programID $sortOrder")
     fun getTimeline(programID: Int): Flow<List<ProgramUnit>>
@@ -54,6 +54,11 @@ interface WordDao {
      * */
     @Query("SELECT * from units_table $sortOrder")
     fun getAllTimelines(): Flow<List<ProgramUnit>>
+    /**
+     * Returns all units from all programs, sorted by date
+     * */
+    @Query("SELECT * from units_table $sortOrder")
+    fun getAllTimelinesList(): List<ProgramUnit>
 
 //    @Insert(onConflict = OnConflictStrategy.IGNORE)
 //    suspend fun insert(word: Word)
@@ -61,8 +66,14 @@ interface WordDao {
 //    @Query("DELETE FROM word_table")
 //    suspend fun deleteAll()
 
+    @Query("DELETE FROM units_table WHERE programID = :programID")
+    suspend fun deleteTimeline(programID: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(unit: ProgramUnit)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(units: List<ProgramUnit>)
 
     @Update
     suspend fun update(unit: ProgramUnit)

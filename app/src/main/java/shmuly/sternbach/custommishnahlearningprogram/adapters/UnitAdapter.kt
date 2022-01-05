@@ -6,11 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.example.android.roomwordssample.ProgramUnitsViewModel
@@ -20,6 +19,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.l4digital.fastscroll.FastScroller
 import shmuly.sternbach.custommishnahlearningprogram.*
+import shmuly.sternbach.custommishnahlearningprogram.Utils.getOverviewString
 import shmuly.sternbach.custommishnahlearningprogram.data.CompletionStatus
 import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
 import timber.log.Timber
@@ -62,17 +62,18 @@ internal class UnitAdapter(
 
     inner class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         val card = v as MaterialCardView
+        val newMaterial: TextView = v.findViewById(R.id.new_material)
         val reviews: TextView = v.findViewById(R.id.reviews)
-        val title: TextView = v.findViewById(R.id.title)
         val date: TextView = v.findViewById(R.id.date)
         val skip: Button = v.findViewById(R.id.skip_button)
         val complete: Button = v.findViewById(R.id.complete_button)
-        val clear: Button = v.findViewById(R.id.clear_button)
         val todo: Button = v.findViewById(R.id.todo_button)
-        val image: ImageView = v.findViewById(R.id.completion_indicator)
-        val list: LinearLayout = v.findViewById(R.id.individual_items_ll)
-        val progressIndicator: CircularProgressIndicator = v.findViewById(R.id.progress_circular)
-        val showHideButton: Button = v.findViewById(R.id.expand_button)
+        val completionIndicatorNewMaterial: ImageView = v.findViewById(R.id.completion_indicator_new_material)
+        val progressIndicatorNewMaterial: CircularProgressIndicator = v.findViewById(R.id.progress_circular_new_material)
+        val progressIndicatorReviews: CircularProgressIndicator = v.findViewById(R.id.progress_circular_reviews)
+        val completionIndicatorReviews: ImageView = v.findViewById(R.id.completion_indicator_reviews)
+        val listOfUnits: LinearLayout = v.findViewById(R.id.individual_items_ll)
+        val showHideButton: ImageButton = v.findViewById(R.id.expand_button)
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -85,26 +86,61 @@ internal class UnitAdapter(
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val pair = getItem(position)
-        ld("OnBindViewHolder: pair=$pair")
         viewHolder.date.text = formatLocalDate(pair.first)
-        val newMaterialString = if (pair.second.isEmpty()) "Review"
-        else getOverviewString(pair.second) /*Brachos 1:1 - Brachos 1:4*/
 
-        viewHolder.title.text = newMaterialString
-        viewHolder.progressIndicator.max = pair.second.size + pair.third.size
-        viewHolder.reviews.text = getOverviewString(pair.third)
+        viewHolder.newMaterial.text = if (pair.second.isEmpty()) "No new material"
+        else getOverviewString(pair.second) /*Brachos 1:1 - Brachos 1:4*/
+        viewHolder.reviews.text = if (pair.third.isEmpty()) "No reviews"
+        else getOverviewString(pair.third)
+
+        if (viewHolder.listOfUnits.isVisible && !listOfExpanded[position]) {
+            viewHolder.listOfUnits.removeAllViews()
+            viewHolder.listOfUnits.visibility = View.GONE
+        }
+        viewHolder.progressIndicatorNewMaterial.max = pair.second.size + pair.third.size
         val selector: (ProgramUnit) -> Int = { (if (it.isCompleted) 1 else 0) }
-        viewHolder.progressIndicator.progress = pair.second.sumOf(selector) + pair.third.sumOf(selector)
-        val resources = viewHolder.image.resources
+        viewHolder.progressIndicatorNewMaterial.progress =
+            pair.second.sumOf(selector) + pair.third.sumOf(selector)
+        val resources = viewHolder.completionIndicatorNewMaterial.resources
+        val listOfAllMaterial = pair.second + pair.third
         val lambda = { view: View ->
-            if (!listOfExpanded[position] && !listOfDrawn[position]) {
+            val isExpanded = listOfExpanded[position]
+            var listPopulatedFromPreviousDrawing = false
+            val needToDrawOrRedrawChildren =
+                /*need to draw because no children have been drawn before*/
+                (!(isExpanded && listOfDrawn[position])).also { if (it) ld("condition 1") } ||
+                        /*need to redraw because children already drawn from different viewholder's information*/ (
+                        /*only overwrite old children if neccesary (i.e. list is visible)*/ viewHolder.listOfUnits.isVisible.also {
+                    if (it) ld(
+                        "condition 2"
+                    )
+                } &&
+                        /*there are children/reviews drawn*/ (viewHolder.listOfUnits.childCount != 0).also {
+                    if (it) ld(
+                        "condition 3"
+                    )
+                } &&
+                        /*there are more or less than this should have*/ (viewHolder.listOfUnits.childCount != pair.second.size + pair.third.size).also {
+                    if (it) ld(
+                        "condition 4"
+                    )
+                } ||
+                        /*even if there are the same amount, maybe they are not the same children as this one's*/ viewHolder.listOfUnits.children.let {
+                    val listOfMaterialStrings = listOfAllMaterial.map { it.material }
+                    it.any {
+                        it.findViewById<TextView>(R.id.unit_to_review).text !in listOfMaterialStrings
+                    }.also { if (it) ld("condition 5") }
+                }
+                        ).also { listPopulatedFromPreviousDrawing = it }
+            if (needToDrawOrRedrawChildren) {
+                if (listPopulatedFromPreviousDrawing) viewHolder.listOfUnits.removeAllViews()
                 ld("allIndividualUnits=${pair.third}")
-                for (index in pair.third.indices) {
-                    viewHolder.list.also {
+                for (index in listOfAllMaterial.indices) {
+                    viewHolder.listOfUnits.also {
                         LayoutInflater.from(it.context)
                             .inflate(R.layout.individual_mishnah_review_sub_item, it, false)
                             .apply {
-                                val unit = pair.third[index]
+                                val unit = listOfAllMaterial[index]
                                 findViewById<TextView>(R.id.unit_to_review).text = unit.material
                                 val toggleGroup =
                                     findViewById<MaterialButtonToggleGroup>(R.id.togggle_group)
@@ -141,12 +177,14 @@ internal class UnitAdapter(
                 }
                 listOfExpanded[position] = true
                 listOfDrawn[position] = true
-            } else if (!listOfExpanded[position]) {
+            } else if (!isExpanded) {
+                ld("List was not expanded")
                 listOfExpanded[position] = true
-                viewHolder.list.visibility = View.VISIBLE
+                viewHolder.listOfUnits.visibility = View.VISIBLE
             } else {
+                ld("List was not expanded")
                 listOfExpanded[position] = false
-                viewHolder.list.visibility = View.GONE
+                viewHolder.listOfUnits.visibility = View.GONE
             }
         }
         viewHolder.showHideButton.setOnClickListener(lambda)
@@ -168,40 +206,37 @@ internal class UnitAdapter(
             } else viewHolder.item.toggleExpanded()
         }*/
         viewHolder.complete.setOnClickListener {
-            viewHolder.image.setImageDrawable(
+            viewHolder.completionIndicatorNewMaterial.setImageDrawable(
                 getDoneIcon(
                     resources,
                     viewHolder.itemView.context.theme
                 )
             )
             updateCompletionStatus(pair, CompletionStatus.COMPLETED)
-            viewHolder.progressIndicator.progress = viewHolder.progressIndicator.max
+            viewHolder.progressIndicatorNewMaterial.progress = viewHolder.progressIndicatorNewMaterial.max
 //            if(pair.first.isAfter(LocalDate.now())){}//move date ahead, remove review from today and add it to the date that you completed TODO
 //            completedUnitsFile.appendText("~${pair.first}")
 //            setOfCompleted.add(pair.first)
         }
         viewHolder.skip.setOnClickListener {
-            viewHolder.image.setImageDrawable(
+            viewHolder.completionIndicatorNewMaterial.setImageDrawable(
                 getSkippedIcon(
                     resources,
                     viewHolder.itemView.context.theme
                 )
             )
             updateCompletionStatus(pair, CompletionStatus.SKIPPED)
-            viewHolder.progressIndicator.progress = 0
+            viewHolder.progressIndicatorNewMaterial.progress = 0
         }
         viewHolder.todo.setOnClickListener {
-            viewHolder.image.setImageDrawable(
+            viewHolder.completionIndicatorNewMaterial.setImageDrawable(
                 getToDoIcon(
                     resources,
                     viewHolder.itemView.context.theme
                 )
             )
             updateCompletionStatus(pair, CompletionStatus.TODO)
-            viewHolder.progressIndicator.progress = 0
-        }
-        viewHolder.clear.setOnClickListener {
-            viewHolder.image.setImageDrawable(null)
+            viewHolder.progressIndicatorNewMaterial.progress = 0
         }
     }
 
@@ -212,38 +247,9 @@ internal class UnitAdapter(
         }
     }
 
-    private fun getIntervalSize(units: List<ProgramUnit>): Int {
-        val firstGroup = units.first().group
-        var intervalSize = 0
-        for (it in units) { //see how long the longest group is
-            if (it.group == firstGroup) intervalSize++ else break
-        }
-        return intervalSize
-    }
-
     /**
      * Returns "Brachos 1:1 - Brachos 1:4"\n...
      * */
-    private fun getOverviewString(units: List<ProgramUnit>): String {
-        val stringBuilder = StringBuilder()
-        var counter = 0
-        var firstUnitInGroup = units[counter++]
-        //1,1,1,1,2,2,2,3,3,3,4,5,6
-        var previousUnit = firstUnitInGroup
-        var thisUnit = units[counter]
-        while(counter < units.size){
-            if(firstUnitInGroup.group == thisUnit.group) {
-                previousUnit = thisUnit
-            }
-            else {
-                stringBuilder.appendLine(firstUnitInGroup.material + " - " + previousUnit.material)
-                firstUnitInGroup = thisUnit
-                previousUnit = firstUnitInGroup
-            }
-            thisUnit = units[counter++]
-        }
-        return stringBuilder.toString()
-    }
     override fun getSectionText(position: Int): CharSequence {
         return formatLocalDate(getItem(position).first)
     }

@@ -1,5 +1,6 @@
 package shmuly.sternbach.custommishnahlearningprogram
 
+import shmuly.sternbach.custommishnahlearningprogram.adapters.ld
 import shmuly.sternbach.custommishnahlearningprogram.data.CompletionStatus
 import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
 //import shmuly.sternbach.custommishnahlearningprogram.activities.toDateMap
@@ -7,6 +8,7 @@ import shmuly.sternbach.custommishnahlearningprogram.data.ProgramUnit
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.system.measureNanoTime
 
 val DATE_PATTERN = "EEE MMMM dd uuuu"
@@ -117,7 +119,7 @@ abstract class LearningProgramMaker {
         val listOfNewMaterial = mutableListOf<ProgramUnit>()
         val listOfReviews = mutableListOf<ProgramUnit>()
         var currentDate = startDate
-//            var counter = 0
+        ld("List of programs: $listOfPrograms")
         val listOfMaterialStrings = listOfPrograms.flatten()
         val listOfUnits = listOfMaterialStrings.windowed(numUnitsPerInterval, numUnitsPerInterval, true)
         for (index in listOfUnits.indices) {
@@ -131,6 +133,8 @@ abstract class LearningProgramMaker {
             )
             currentDate = currentDate.plus(intervalToLearnNewMaterial)
         }
+        ld("List of new material: ${listOfNewMaterial.take(30)}")
+        ld("List of reviews: ${listOfReviews.take(30)}")
         return listOfNewMaterial to listOfReviews
     }
 
@@ -172,7 +176,8 @@ abstract class LearningProgramMaker {
                             0,
                             reviewInterval
                         )
-                    )
+                    ),
+                    uuid = UUID.randomUUID()
                 )
             )
         }
