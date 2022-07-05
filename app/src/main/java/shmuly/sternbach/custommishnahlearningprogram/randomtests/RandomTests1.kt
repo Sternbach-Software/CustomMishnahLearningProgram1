@@ -1,10 +1,20 @@
 package shmuly.sternbach.custommishnahlearningprogram.randomtests
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import org.json.JSONStringer
 import shmuly.sternbach.custommishnahlearningprogram.logic.LearningProgramScheduleMakerByEndDate
 import timber.log.Timber
+import java.io.File
 import java.security.SecureRandom
 import java.time.LocalDate
 import java.time.Period
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.collections.ArrayList
 import kotlin.random.asKotlinRandom
 import kotlin.system.measureNanoTime
 
@@ -21,26 +31,63 @@ val recursiveList = listOf(
 )
 val stringBuilder = StringBuilder()
 fun main() {
-    val material = List(4_192) { List(it + 1) { it.toString() } }
+    //3 hours, 2200
+    val numEntries = 4_192
+    val material = List(numEntries) { List(it + 1) { it.toString() } }
     val now = LocalDate.now()
-    val days = List(4_192) { now.plusDays(it.toLong()) }
+    val days = List(numEntries) { now.plusDays(it.toLong()) }
 //    val material = MutableList(1000) { (it + 1).toString() }/*Mishnayos().getAllUnits()*/
 //    val twoPerDay = LearningProgramScheduleMakerByEndDate().generateProgram(list, 0, LocalDate.now().plusDays(50),)
 //    println("Two per day: ${twoPerDay.joinToString("\n", "\n")}")
-    val listOfMetadata = mutableListOf<LearningProgramScheduleMakerByEndDate.ProgramMetadata>()
+    val listOfMetadata = Collections.synchronizedList(ArrayList<LearningProgramScheduleMakerByEndDate.ProgramMetadata>(
+        numEntries
+    ))
     val maker = LearningProgramScheduleMakerByEndDate()
-    val interval = Period.of(0,0,1)
-    for(numUnits in 0 until 4_192) {
-        println("New num units:$numUnits")
-        for(numDaysAfterToday in 0 until 4_192) {
-            try {
-                maker.generateProgram(material[numUnits], 0, days[numDaysAfterToday], listOfMetadata, now, interval)
-            } catch (t: Throwable) {
-                println("Failed: generateProgram(material[$numUnits], 0, days[$numDaysAfterToday], listOfMetadata, now, interval)")
-                t.printStackTrace()
+    val scope = CoroutineScope(SupervisorJob())
+    val interval = Period.of(0, 0, 1)
+    val atomicInt = AtomicInteger(0)
+    val total = numEntries * numEntries
+    val intRange = 0 until numEntries
+    for (numUnits in intRange) {
+        for (numDaysAfterToday in intRange) {
+            scope.launch(Dispatchers.Default) {
+                try {
+                    maker.generateProgram(
+                        material[numUnits],
+                        0,
+                        days[numDaysAfterToday],
+                        listOfMetadata,
+                        now,
+                        interval
+                    )
+                    println("Finished computation number ${atomicInt.incrementAndGet()}/$total")
+                } catch (t: Throwable) {
+                    println("Failed: generateProgram(material[$numUnits], 0, days[$numDaysAfterToday], listOfMetadata, now, interval)")
+                    t.printStackTrace()
+                }
             }
         }
     }
+    val jsonStringer = JSONStringer().array()
+    for (metadata in listOfMetadata) {
+        jsonStringer
+            .`object`()
+            .key("numDays")
+            .value(metadata.numDays)
+            .key("numUnits")
+            .value(metadata.numUnits)
+            .apply {
+                val jobject = JSONObject()
+                for (entry in metadata.freqMap) {
+                    jobject.put(entry.key.toString(), entry.value)
+                }
+                key("freqMap")
+                value(jobject)
+            }
+            .endObject()
+    }
+    jsonStringer.endArray()
+    File("results.txt").writeText(jsonStringer.toString())
     println(listOfMetadata)
     /*val twoPerDayWithRemainder = maker.generateProgram(
         material,
