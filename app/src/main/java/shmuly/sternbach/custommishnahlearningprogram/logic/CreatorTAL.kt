@@ -744,9 +744,12 @@ fun getCalendar(
     )
 }
 
-fun endOf(name: String): String = "${name}, ${Perakim[Masechtot.indexOf(name)].size},${
-    Perakim[Masechtot.indexOf(name)][Perakim[Masechtot.indexOf(name)].size - 1]
-}"
+fun endOf(name: String): String {
+    val list = Perakim[Masechtot.indexOf(name)]
+    return "${name}, ${list.size},${
+        list[list.size - 1]
+    }"
+}
 
 fun setChart(
     startM: String = "Berachot, 1,1",

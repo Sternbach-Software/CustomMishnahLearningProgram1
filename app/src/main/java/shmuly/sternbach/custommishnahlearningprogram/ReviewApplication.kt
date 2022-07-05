@@ -7,6 +7,7 @@ import com.example.android.roomwordssample.WordRoomDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import shmuly.sternbach.custommishnahlearningprogram.activities.programInitialized
+import shmuly.sternbach.custommishnahlearningprogram.logic.Mishnayos
 import timber.log.Timber
 
 lateinit var mishnayos: Mishnayos

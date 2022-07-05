@@ -85,7 +85,7 @@ class ProgramUnitsViewModel(private val repository: WordRepository) : ViewModel(
     /**
      * Launching a new coroutine to insert the data in a non-blocking way
      */
-    fun update(unit: ProgramUnit) = viewModelScope.launch {
+    fun update(unit: ProgramUnit) = viewModelScope.launch {//TODO this won't finish if the user leaves the activity becasue the coroutine will be cancelled...? So why did they do that in the codelab?
         repository.update(unit)
     }
     fun insertAll(units: List<ProgramUnit>) = viewModelScope.launch {

@@ -1,0 +1,4 @@
+package shmuly.sternbach.custommishnahlearningprogram.logic
+
+class LearningProgramScheduleMakerByStartDateAndRunCount {
+}
