@@ -48,10 +48,12 @@ fun main() {
     val atomicInt = AtomicInteger(0)
     val total = numEntries * numEntries
     val intRange = 0 until numEntries
+    val benchmark = Collections.synchronizedList(ArrayList<Triple<Int, Int, Long>>(numEntries))
     for (numUnits in intRange) {
         for (numDaysAfterToday in intRange) {
             scope.launch(Dispatchers.Default) {
                 try {
+                    val start = System.nanoTime()
                     maker.generateProgram(
                         material[numUnits],
                         0,
@@ -60,6 +62,7 @@ fun main() {
                         now,
                         interval
                     )
+                    benchmark.add(Triple(numUnits, numDaysAfterToday, System.nanoTime() - start))
                     println("Finished computation number ${atomicInt.incrementAndGet()}/$total")
                 } catch (t: Throwable) {
                     println("Failed: generateProgram(material[$numUnits], 0, days[$numDaysAfterToday], listOfMetadata, now, interval)")
@@ -88,6 +91,7 @@ fun main() {
     }
     jsonStringer.endArray()
     File("results.txt").writeText(jsonStringer.toString())
+    File("benchmark.csv").writeText(benchmark.joinToString("\n", "x,y,z\n"){"${it.first},${it.second},${it.third}"})
     println(listOfMetadata)
     /*val twoPerDayWithRemainder = maker.generateProgram(
         material,
