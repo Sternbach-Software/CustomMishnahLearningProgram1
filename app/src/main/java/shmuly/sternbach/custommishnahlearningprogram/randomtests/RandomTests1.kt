@@ -31,8 +31,11 @@ val recursiveList = listOf(
 )
 val stringBuilder = StringBuilder()
 fun main() {
+    test(2_000)
+    test()
+}
+fun test(numEntries: Int = 4_192) {
     //3 hours, 2200
-    val numEntries = 4_192
     val material = List(numEntries) { List(it + 1) { it.toString() } }
     val now = LocalDate.now()
     val days = List(numEntries) { now.plusDays(it.toLong()) }
